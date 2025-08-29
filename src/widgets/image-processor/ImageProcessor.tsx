@@ -33,7 +33,10 @@ import type {
   Point,
 } from '../../shared/types';
 import { warpImagePerspective } from '../../shared/utils';
-import { downloadWithFolder, downloadMultipleWithFolder } from '../../shared/utils/download';
+import {
+  downloadWithFolder,
+  downloadMultipleWithFolder,
+} from '../../shared/utils/download';
 import { ImageUploader, ImageList } from '../../features/image-upload';
 import { useTransform } from '../../features/free-transform';
 import { PerspectiveTransformImage } from './components/PerspectiveTransformImage';
@@ -67,7 +70,6 @@ function TabPanel(props: TabPanelProps) {
 }
 
 const ImageProcessor: React.FC = () => {
-  // Common state
   const [imageFiles, setImageFiles] = useState<ImageFile[]>([]);
   const [selectedImage, setSelectedImage] = useState<ImageFile | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -75,12 +77,11 @@ const ImageProcessor: React.FC = () => {
   const [alertSeverity, setAlertSeverity] = useState<AlertSeverity>('info');
   const [activeTab, setActiveTab] = useState(0);
   const [canvasScale, setCanvasScale] = useState(1.0);
-  // Rotation state
+
   const [rotation, setRotation] = useState(0);
   const [flipHorizontal, setFlipHorizontal] = useState(false);
   const [flipVertical, setFlipVertical] = useState(false);
 
-  // Stage and image
   const stageRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [image] = useImage(selectedImage?.preview || '');
@@ -90,7 +91,6 @@ const ImageProcessor: React.FC = () => {
     height: 600,
   });
 
-  // Transform hook
   const {
     transformMode,
     transformBounds,
@@ -108,7 +108,6 @@ const ImageProcessor: React.FC = () => {
     applyPresetTransform,
   } = useTransform(stageSize);
 
-  // Handlers
   const { isDragActive } = useDropzone({
     onDrop: useCallback(
       (acceptedFiles: File[]) => {
@@ -158,13 +157,12 @@ const ImageProcessor: React.FC = () => {
     setIsImageLoaded(false);
   }, []);
 
-  // Stage size management
   const updateStageSize = useCallback(() => {
     if (containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
       setStageSize({
-        width: rect.width - 4, // 가로 꽉차게
-        height: rect.height - 4, // 세로도 꽉차게
+        width: rect.width - 4,
+        height: rect.height - 4,
       });
     }
   }, []);
@@ -194,7 +192,6 @@ const ImageProcessor: React.FC = () => {
     }
   }, [stageSize, image, isImageLoaded, resetTransform]);
 
-  // Transform processing
   const processTransform = async () => {
     if (!selectedImage || !image) {
       showAlertMessage('변형할 이미지를 선택하세요', 'warning');
@@ -221,12 +218,11 @@ const ImageProcessor: React.FC = () => {
         stageSize: transformBounds,
       });
 
-      // 폴더 기반 다운로드 사용
       await downloadWithFolder({
         dataURL,
         originalFileName: selectedImage.name,
         transformType: 'transform',
-        timestamp: true
+        timestamp: true,
       });
 
       showAlertMessage('이미지를 폴더로 다운로드했습니다.', 'success');
@@ -238,7 +234,6 @@ const ImageProcessor: React.FC = () => {
     }
   };
 
-  // Batch processing
   const processBatch = async () => {
     if (imageFiles.length === 0) {
       showAlertMessage('처리할 이미지가 없습니다', 'warning');
@@ -248,7 +243,7 @@ const ImageProcessor: React.FC = () => {
 
     try {
       const batchResults = [];
-      
+
       for (let i = 0; i < imageFiles.length; i++) {
         const imageFile = imageFiles[i];
         const img = new Image();
@@ -281,7 +276,7 @@ const ImageProcessor: React.FC = () => {
 
         batchResults.push({
           dataURL,
-          originalFileName: imageFile.name
+          originalFileName: imageFile.name,
         });
 
         if (imageFile.file instanceof File) {
@@ -289,7 +284,6 @@ const ImageProcessor: React.FC = () => {
         }
       }
 
-      // 모든 이미지를 한 번에 폴더로 다운로드
       await downloadMultipleWithFolder(batchResults, 'batch_transform');
 
       showAlertMessage(
@@ -304,12 +298,10 @@ const ImageProcessor: React.FC = () => {
     }
   };
 
-  // Handle corner drag based on transform mode
   const handleCornerDrag = (idx: number, newX: number, newY: number) => {
     setCornerPoint(idx, newX, newY);
   };
 
-  // Rotation processing
   const processRotation = async () => {
     if (!selectedImage || !image) {
       showAlertMessage('변형할 이미지를 선택하세요', 'warning');
@@ -324,7 +316,6 @@ const ImageProcessor: React.FC = () => {
       const iw = image.naturalWidth || image.width;
       const ih = image.naturalHeight || image.height;
 
-      // Calculate rotated dimensions
       const rad = (rotation * Math.PI) / 180;
       const rotatedWidth =
         Math.abs(iw * Math.cos(rad)) + Math.abs(ih * Math.sin(rad));
@@ -334,22 +325,19 @@ const ImageProcessor: React.FC = () => {
       canvas.width = rotatedWidth;
       canvas.height = rotatedHeight;
 
-      // Move to center and apply transformations
       ctx.translate(rotatedWidth / 2, rotatedHeight / 2);
       ctx.rotate(rad);
       ctx.scale(flipHorizontal ? -1 : 1, flipVertical ? -1 : 1);
 
-      // Draw image
       ctx.drawImage(image, -iw / 2, -ih / 2, iw, ih);
 
-      const dataURL = canvas.toDataURL('image/png', 1.0);
+      const dataURL = canvas.toDataURL('image/png', 0.6);
 
-      // 폴더 기반 다운로드 사용
       await downloadWithFolder({
         dataURL,
         originalFileName: selectedImage.name,
         transformType: 'rotation',
-        timestamp: true
+        timestamp: true,
       });
 
       showAlertMessage('회전된 이미지를 폴더로 다운로드했습니다.', 'success');
@@ -361,7 +349,6 @@ const ImageProcessor: React.FC = () => {
     }
   };
 
-  // Batch rotation processing
   const processBatchRotation = async () => {
     if (imageFiles.length === 0) {
       showAlertMessage('처리할 이미지가 없습니다', 'warning');
@@ -371,7 +358,7 @@ const ImageProcessor: React.FC = () => {
 
     try {
       const batchResults = [];
-      
+
       for (let i = 0; i < imageFiles.length; i++) {
         const imageFile = imageFiles[i];
         const img = new Image();
@@ -390,7 +377,6 @@ const ImageProcessor: React.FC = () => {
         const iw = img.naturalWidth || img.width;
         const ih = img.naturalHeight || img.height;
 
-        // Calculate rotated dimensions
         const rad = (rotation * Math.PI) / 180;
         const rotatedWidth =
           Math.abs(iw * Math.cos(rad)) + Math.abs(ih * Math.sin(rad));
@@ -400,19 +386,17 @@ const ImageProcessor: React.FC = () => {
         canvas.width = rotatedWidth;
         canvas.height = rotatedHeight;
 
-        // Move to center and apply transformations
         ctx.translate(rotatedWidth / 2, rotatedHeight / 2);
         ctx.rotate(rad);
         ctx.scale(flipHorizontal ? -1 : 1, flipVertical ? -1 : 1);
 
-        // Draw image
         ctx.drawImage(img, -iw / 2, -ih / 2, iw, ih);
 
-        const dataURL = canvas.toDataURL('image/png', 1.0);
-        
+        const dataURL = canvas.toDataURL('image/png', 0.6);
+
         batchResults.push({
           dataURL,
-          originalFileName: imageFile.name
+          originalFileName: imageFile.name,
         });
 
         if (imageFile.file instanceof File) {
@@ -420,7 +404,6 @@ const ImageProcessor: React.FC = () => {
         }
       }
 
-      // 모든 회전된 이미지를 한 번에 폴더로 다운로드
       await downloadMultipleWithFolder(batchResults, 'batch_rotation');
 
       showAlertMessage(
@@ -564,15 +547,15 @@ const ImageProcessor: React.FC = () => {
                         const points = getTransformedPoints();
                         const linePoints = [
                           points[0].x,
-                          points[0].y, // 좌상 -> 우상
+                          points[0].y,
                           points[1].x,
                           points[1].y,
                           points[2].x,
-                          points[2].y, // 우상 -> 우하
+                          points[2].y,
                           points[3].x,
-                          points[3].y, // 우하 -> 좌하
+                          points[3].y,
                           points[0].x,
-                          points[0].y, // 좌하 -> 좌상 (닫기)
+                          points[0].y,
                         ];
 
                         return (

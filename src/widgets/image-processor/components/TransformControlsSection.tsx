@@ -48,12 +48,6 @@ export const TransformControlsSection: React.FC = () => {
   const [flipVertical, setFlipVertical] = useAtom(flipVerticalAtom);
   
   const {
-    transformMode,
-    resetTransform,
-    adjustCorner,
-    adjustHorizontal,
-    adjustVertical,
-    adjustCornerPrecise,
     applyPresetTransform,
   } = useTransform({ width: 800, height: 600 });
 
@@ -104,7 +98,7 @@ export const TransformControlsSection: React.FC = () => {
                     </Typography>
                     <div className="flex flex-col gap-1">
                       <Button
-                        onClick={() => adjustCorner(idx, 'expand')}
+                        onClick={() => applyPresetTransform('expand')}
                         variant="outlined"
                         size="small"
                         className="min-w-0 p-1"
@@ -112,7 +106,7 @@ export const TransformControlsSection: React.FC = () => {
                         <ArrowUpIcon className="w-4 h-4" />
                       </Button>
                       <Button
-                        onClick={() => adjustCorner(idx, 'contract')}
+                        onClick={() => applyPresetTransform('contract')}
                         variant="outlined"
                         size="small"
                         className="min-w-0 p-1"

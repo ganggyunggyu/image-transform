@@ -16,7 +16,6 @@ import {
   Switch,
   FormControlLabel,
   LinearProgress,
-  Grid,
   Divider,
   Tooltip
 } from '@mui/material';
@@ -250,8 +249,8 @@ ${keyword}는 현재와 미래 모두에 걸쳐 중요한 가치를 제공하는
         </Alert>
       )}
 
-      <Grid container spacing={3} className="h-[calc(100vh-200px)]">
-        <Grid item xs={12} lg={3}>
+      <Box className="flex gap-6 h-[calc(100vh-200px)]">
+        <Box className="w-full lg:w-1/4">
           <Card className="shadow-lg border-0 h-fit">
             <CardContent>
               <Typography variant="h6" className="font-bold mb-4 text-gray-800 flex items-center gap-2">
@@ -507,9 +506,9 @@ ${keyword}는 현재와 미래 모두에 걸쳐 중요한 가치를 제공하는
               </CardContent>
             </Card>
           )}
-        </Grid>
+        </Box>
 
-        <Grid item xs={12} lg={9}>
+        <Box className="w-full lg:w-3/4">
           {generatedContent ? (
             <div className="bg-white rounded-lg shadow-md border">
               <div className="p-4">
@@ -616,8 +615,8 @@ ${keyword}는 현재와 미래 모두에 걸쳐 중요한 가치를 제공하는
               </div>
             </div>
           )}
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
 
       <Divider className="my-6" />
 

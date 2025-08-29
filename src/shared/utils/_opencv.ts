@@ -1,4 +1,4 @@
-import type { Point, StageSize, TransformBounds } from '../types';
+import type { Point, TransformBounds } from '../types';
 
 let cvReadyPromise: Promise<void> | null = null;
 
@@ -33,7 +33,7 @@ export const warpImagePerspective = async (opts: {
   await loadOpenCV();
   const cv = (window as any).cv as any;
 
-  const { imgEl, srcSize, dstStagePoints, stageTL, stageScale, stageSize } = opts;
+  const { imgEl, srcSize, dstStagePoints, stageTL, stageSize } = opts;
 
   // Stage -> image-pixel 좌표 변환 (원본 해상도 기준)
   const toImgPx = (p: Point): Point => {

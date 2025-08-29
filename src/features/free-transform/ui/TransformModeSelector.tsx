@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, ToggleButton, ToggleButtonGroup, Paper } from '@mui/material';
+import { Box, Typography, Paper } from '@mui/material';
 import { CropFree, ViewInAr, Transform, FormatShapes } from '@mui/icons-material';
 import type { TransformMode } from '../../../shared/types';
 

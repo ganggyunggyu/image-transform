@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { useAtom } from 'jotai';
-import { Stage, Layer, Image as KonvaImage, Line, Circle, Rect } from 'react-konva';
+import { Stage, Layer, Line, Circle, Rect } from 'react-konva';
 import useImage from 'use-image';
 import {
   Button,
@@ -36,8 +36,8 @@ export const CanvasSection: React.FC = () => {
     getTransformedPoints,
     getEdgePoints,
     resetTransform,
-    handleCornerDrag,
     handleEdgeDrag,
+    setCornerPoint,
   } = useTransform(stageSize);
 
   // 컨테이너 크기에 따라 스테이지 크기 조정
@@ -185,7 +185,7 @@ export const CanvasSection: React.FC = () => {
                       listening={true}
                       hitStrokeWidth={20}
                       onDragMove={(e) => { 
-                        handleCornerDrag(idx, e.target.x(), e.target.y()); 
+                        setCornerPoint(idx, e.target.x(), e.target.y()); 
                       }}
                       onMouseEnter={(e) => {
                         const shape = e.target as any;

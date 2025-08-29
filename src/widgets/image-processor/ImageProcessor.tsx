@@ -33,6 +33,7 @@ import type {
   Point,
 } from '../../shared/types';
 import { warpImagePerspective } from '../../shared/utils';
+import { downloadWithFolder, downloadMultipleWithFolder } from '../../shared/utils/download';
 import { ImageUploader, ImageList } from '../../features/image-upload';
 import { useTransform } from '../../features/free-transform';
 import { PerspectiveTransformImage } from './components/PerspectiveTransformImage';
@@ -220,14 +221,15 @@ const ImageProcessor: React.FC = () => {
         stageSize: transformBounds,
       });
 
-      const link = document.createElement('a');
-      link.download = `transformed_${selectedImage.name.split('.')[0]}.png`;
-      link.href = dataURL;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // 폴더 기반 다운로드 사용
+      await downloadWithFolder({
+        dataURL,
+        originalFileName: selectedImage.name,
+        transformType: 'transform',
+        timestamp: true
+      });
 
-      showAlertMessage('이미지를 다운로드했습니다.', 'success');
+      showAlertMessage('이미지를 폴더로 다운로드했습니다.', 'success');
     } catch (e) {
       console.error(e);
       showAlertMessage('오류가 발생했습니다.', 'error');
@@ -245,6 +247,8 @@ const ImageProcessor: React.FC = () => {
     setIsProcessing(true);
 
     try {
+      const batchResults = [];
+      
       for (let i = 0; i < imageFiles.length; i++) {
         const imageFile = imageFiles[i];
         const img = new Image();
@@ -275,22 +279,21 @@ const ImageProcessor: React.FC = () => {
           stageSize: transformBounds,
         });
 
-        const link = document.createElement('a');
-        link.download = `batch_transformed_${imageFile.name.split('.')[0]}.png`;
-        link.href = dataURL;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        batchResults.push({
+          dataURL,
+          originalFileName: imageFile.name
+        });
 
         if (imageFile.file instanceof File) {
           URL.revokeObjectURL(img.src);
         }
-
-        await new Promise((resolve) => setTimeout(resolve, 500));
       }
 
+      // 모든 이미지를 한 번에 폴더로 다운로드
+      await downloadMultipleWithFolder(batchResults, 'batch_transform');
+
       showAlertMessage(
-        `${imageFiles.length}개의 이미지를 일괄 처리했습니다.`,
+        `${imageFiles.length}개의 이미지를 폴더로 일괄 다운로드했습니다.`,
         'success'
       );
     } catch (e) {
@@ -341,14 +344,15 @@ const ImageProcessor: React.FC = () => {
 
       const dataURL = canvas.toDataURL('image/png', 1.0);
 
-      const link = document.createElement('a');
-      link.download = `rotated_${selectedImage.name.split('.')[0]}.png`;
-      link.href = dataURL;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // 폴더 기반 다운로드 사용
+      await downloadWithFolder({
+        dataURL,
+        originalFileName: selectedImage.name,
+        transformType: 'rotation',
+        timestamp: true
+      });
 
-      showAlertMessage('회전된 이미지를 다운로드했습니다.', 'success');
+      showAlertMessage('회전된 이미지를 폴더로 다운로드했습니다.', 'success');
     } catch (e) {
       console.error(e);
       showAlertMessage('회전 처리 중 오류가 발생했습니다.', 'error');
@@ -366,6 +370,8 @@ const ImageProcessor: React.FC = () => {
     setIsProcessing(true);
 
     try {
+      const batchResults = [];
+      
       for (let i = 0; i < imageFiles.length; i++) {
         const imageFile = imageFiles[i];
         const img = new Image();
@@ -403,23 +409,22 @@ const ImageProcessor: React.FC = () => {
         ctx.drawImage(img, -iw / 2, -ih / 2, iw, ih);
 
         const dataURL = canvas.toDataURL('image/png', 1.0);
-
-        const link = document.createElement('a');
-        link.download = `batch_rotated_${imageFile.name.split('.')[0]}.png`;
-        link.href = dataURL;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        
+        batchResults.push({
+          dataURL,
+          originalFileName: imageFile.name
+        });
 
         if (imageFile.file instanceof File) {
           URL.revokeObjectURL(img.src);
         }
-
-        await new Promise((resolve) => setTimeout(resolve, 500));
       }
 
+      // 모든 회전된 이미지를 한 번에 폴더로 다운로드
+      await downloadMultipleWithFolder(batchResults, 'batch_rotation');
+
       showAlertMessage(
-        `${imageFiles.length}개의 이미지를 일괄 회전 처리했습니다.`,
+        `${imageFiles.length}개의 이미지를 폴더로 일괄 회전 다운로드했습니다.`,
         'success'
       );
     } catch (e) {

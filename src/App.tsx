@@ -7,8 +7,9 @@ import {
   Tab,
   Paper,
 } from '@mui/material';
-import { ContentGenerator } from './widgets/content-generator';
-import { ImageProcessor } from './widgets/image-processor';
+import { ContentGenerator } from '@/widgets/content-generator';
+import { ImageProcessor } from '@/widgets/image-processor';
+import { cn } from '@/shared/lib';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -25,10 +26,10 @@ function TabPanel(props: TabPanelProps) {
       hidden={value !== index}
       id={`tabpanel-${index}`}
       aria-labelledby={`tab-${index}`}
-      className="w-full"
+      className={cn('w-full')}
       {...other}
     >
-      {value === index && <Box className="py-6">{children}</Box>}
+      {value === index && <Box className={cn('py-6')}>{children}</Box>}
     </div>
   );
 }
@@ -42,20 +43,20 @@ function App() {
 
   return (
     <Provider>
-      <Box className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-slate-100">
+      <Box className={cn('min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-slate-100')}>
         <Container
           maxWidth={false}
-          className="py-6 px-8 w-screen max-w-screen mx-auto"
+          className={cn('py-6 px-8 w-screen max-w-screen mx-auto')}
         >
           <Paper
             elevation={3}
-            className="rounded-2xl overflow-hidden bg-white/90 backdrop-blur-sm border border-white/20"
+            className={cn('rounded-2xl overflow-hidden bg-white/90 backdrop-blur-sm border border-white/20')}
           >
-            <Box className="border-b border-gray-100">
+            <Box className={cn('border-b border-gray-100')}>
               <Tabs
                 value={tabValue}
                 onChange={handleTabChange}
-                className="px-6"
+                className={cn('px-6')}
                 sx={{
                   '& .MuiTab-root': {
                     textTransform: 'none',
@@ -84,13 +85,13 @@ function App() {
                   label="AI 원고 생성"
                   id="tab-0"
                   aria-controls="tabpanel-0"
-                  className="px-8"
+                  className={cn('px-8')}
                 />
                 <Tab
                   label="이미지 변형"
                   id="tab-1"
                   aria-controls="tabpanel-1"
-                  className="px-8"
+                  className={cn('px-8')}
                 />
               </Tabs>
             </Box>

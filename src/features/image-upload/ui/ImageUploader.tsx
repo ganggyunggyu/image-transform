@@ -2,7 +2,8 @@ import React from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Box, Button, Typography, Paper } from '@mui/material';
 import { CloudUpload as CloudUploadIcon, DeleteSweep as DeleteSweepIcon } from '@mui/icons-material';
-import type { ImageFile } from '../../../shared/types';
+import type { ImageFile } from '@/shared/types';
+import { cn } from '@/shared/lib';
 
 interface Props {
   imageFiles: ImageFile[];
@@ -37,18 +38,17 @@ export const ImageUploader: React.FC<Props> = ({
   });
 
   return (
-    <Box className="space-y-4">
+    <Box className={cn('space-y-4')}>
       <Paper
         {...getRootProps()}
         elevation={0}
-        className={`
-          border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer min-h-[140px] 
-          flex flex-col items-center justify-center transition-all duration-300 ease-in-out
-          ${isDragActive 
-            ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-indigo-50 scale-[1.02] shadow-lg' 
+        className={cn(
+          'border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer min-h-[140px]',
+          'flex flex-col items-center justify-center transition-all duration-300 ease-in-out',
+          isDragActive
+            ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-indigo-50 scale-[1.02] shadow-lg'
             : 'border-gray-300 bg-gradient-to-br from-gray-50 to-slate-50 hover:from-blue-50 hover:to-indigo-50 hover:border-blue-400 hover:shadow-md'
-          }
-        `}
+        )}
         sx={{
           transition: 'all 0.3s ease',
           '&:hover': {
@@ -67,7 +67,7 @@ export const ImageUploader: React.FC<Props> = ({
         />
         <Typography 
           variant="body1" 
-          className="font-semibold mb-1"
+          className={cn('font-semibold mb-1')}
           sx={{ 
             color: isDragActive ? '#3b82f6' : '#374151',
             transition: 'color 0.3s ease'
@@ -75,7 +75,7 @@ export const ImageUploader: React.FC<Props> = ({
         >
           {isDragActive ? '파일을 여기에 놓으세요' : '이미지를 업로드하세요'}
         </Typography>
-        <Typography variant="body2" className="text-gray-500">
+        <Typography variant="body2" className={cn('text-gray-500')}>
           드래그 앤 드롭하거나 클릭하여 파일을 선택하세요
         </Typography>
       </Paper>
@@ -87,7 +87,7 @@ export const ImageUploader: React.FC<Props> = ({
         color="error"
         fullWidth
         startIcon={<DeleteSweepIcon />}
-        className="py-3 text-sm font-semibold rounded-xl border-2"
+        className={cn('py-3 text-sm font-semibold rounded-xl border-2')}
         sx={{
           '&:hover': {
             backgroundColor: 'rgba(239, 68, 68, 0.05)',

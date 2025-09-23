@@ -31,14 +31,15 @@ import type {
   AlertSeverity,
   StageSize,
   Point,
-} from '../../shared/types';
-import { warpImagePerspective } from '../../shared/utils';
+} from '@/shared/types';
+import { warpImagePerspective } from '@/shared/utils';
 import {
   downloadWithFolder,
   downloadMultipleWithFolder,
-} from '../../shared/utils/download';
-import { ImageUploader, ImageList } from '../../features/image-upload';
-import { useTransform } from '../../features/free-transform';
+} from '@/shared/utils/download';
+import { cn } from '@/shared/lib';
+import { ImageUploader, ImageList } from '@/features/image-upload';
+import { useTransform } from '@/features/free-transform';
 import { PerspectiveTransformImage } from './components/PerspectiveTransformImage';
 import { PresetTransformButtons } from './components/PresetTransformButtons';
 import { TransformModeSelector } from './components/TransformModeSelector';
@@ -59,11 +60,11 @@ function TabPanel(props: TabPanelProps) {
       hidden={value !== index}
       id={`tabpanel-${index}`}
       aria-labelledby={`tab-${index}`}
-      className={value === index ? 'pt-4' : ''}
+      className={cn(value === index && 'pt-4')}
       {...other}
     >
       {value === index && (
-        <Box className="animate-in fade-in duration-300">{children}</Box>
+        <Box className={cn('animate-in fade-in duration-300')}>{children}</Box>
       )}
     </div>
   );
@@ -419,29 +420,29 @@ const ImageProcessor: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen">
+    <div className={cn('flex h-screen')}>
       {/* Alert */}
       {showAlert && (
         <Alert
           severity={alertSeverity}
           onClose={() => setShowAlert('')}
-          className="fixed top-4 left-4 right-4 z-50"
+          className={cn('fixed top-4 left-4 right-4 z-50')}
         >
           {showAlert}
         </Alert>
       )}
 
       {/* 왼쪽 사이드바 - 파일 관리 */}
-      <div className="w-80 min-w-80 bg-white border-r border-gray-200 flex flex-col">
-        <div className="p-6 bg-blue-50 border-b">
-          <Typography variant="h6" className="font-bold text-gray-800">
+      <div className={cn('w-80 min-w-80 bg-white border-r border-gray-200 flex flex-col')}>
+        <div className={cn('p-6 bg-blue-50 border-b')}>
+          <Typography variant="h6" className={cn('font-bold text-gray-800')}>
             파일 관리
           </Typography>
-          <Typography variant="body2" className="text-gray-600">
+          <Typography variant="body2" className={cn('text-gray-600')}>
             이미지를 업로드하고 관리하세요
           </Typography>
         </div>
-        <div className="flex-1 p-6">
+        <div className={cn('flex-1 p-6')}>
           <ImageUploader
             imageFiles={imageFiles}
             onFilesAdd={(newFiles) => {
@@ -467,8 +468,8 @@ const ImageProcessor: React.FC = () => {
       </div>
 
       {/* 중앙 작업공간 */}
-      <div className="flex-1 min-w-0 flex flex-col bg-gray-50">
-        <div className="bg-white border-b">
+      <div className={cn('flex-1 min-w-0 flex flex-col bg-gray-50')}>
+        <div className={cn('bg-white border-b')}>
           <Tabs
             value={activeTab}
             onChange={(_, v) => setActiveTab(v)}
@@ -492,9 +493,9 @@ const ImageProcessor: React.FC = () => {
           </Tabs>
         </div>
 
-        <div className="flex-1 p-2 flex flex-col">
+        <div className={cn('flex-1 p-2 flex flex-col')}>
           <TabPanel value={activeTab} index={0}>
-            <div className="flex gap-2 mb-2 flex-wrap">
+            <div className={cn('flex gap-2 mb-2 flex-wrap')}>
               <Button
                 onClick={() => resetTransform(image)}
                 variant="outlined"
@@ -522,13 +523,13 @@ const ImageProcessor: React.FC = () => {
               <Chip
                 label={`${Math.round(canvasScale * 100)}%`}
                 size="small"
-                className="bg-blue-50 text-blue-700"
+                className={cn('bg-blue-50 text-blue-700')}
               />
             </div>
 
             <div
               ref={containerRef}
-              className="border-2 border-gray-200 rounded-xl bg-white overflow-hidden"
+              className={cn('border-2 border-gray-200 rounded-xl bg-white overflow-hidden')}
               style={{ width: 'calc(100vw - 680px)', height: '70vh' }}
             >
               <Stage
@@ -604,7 +605,7 @@ const ImageProcessor: React.FC = () => {
           </TabPanel>
 
           <TabPanel value={activeTab} index={1}>
-            <div className="flex gap-2 mb-2">
+            <div className={cn('flex gap-2 mb-2')}>
               <Button
                 onClick={() => {
                   setRotation(0);
@@ -636,13 +637,13 @@ const ImageProcessor: React.FC = () => {
               <Chip
                 label={`${Math.round(canvasScale * 100)}%`}
                 size="small"
-                className="bg-blue-50 text-blue-700"
+                className={cn('bg-blue-50 text-blue-700')}
               />
             </div>
 
             <div
               ref={containerRef}
-              className="border-2 border-gray-200 rounded-xl bg-white overflow-hidden"
+              className={cn('border-2 border-gray-200 rounded-xl bg-white overflow-hidden')}
               style={{ width: 'calc(100vw - 680px)', height: '70vh' }}
             >
               <Stage
@@ -674,7 +675,7 @@ const ImageProcessor: React.FC = () => {
             </div>
           </TabPanel>
 
-          <div className="flex gap-4 mt-4">
+          <div className={cn('flex gap-4 mt-4')}>
             <Button
               onClick={activeTab === 0 ? processTransform : processRotation}
               disabled={!selectedImage || isProcessing}
@@ -697,7 +698,7 @@ const ImageProcessor: React.FC = () => {
           </div>
 
           {isProcessing && (
-            <div className="mt-4">
+            <div className={cn('mt-4')}>
               <LinearProgress
                 sx={{
                   '& .MuiLinearProgress-bar': {
@@ -707,7 +708,7 @@ const ImageProcessor: React.FC = () => {
               />
               <Typography
                 variant="body2"
-                className="text-center text-gray-600 mt-2"
+                className={cn('text-center text-gray-600 mt-2')}
               >
                 처리 중...
               </Typography>
@@ -717,14 +718,14 @@ const ImageProcessor: React.FC = () => {
       </div>
 
       {/* 오른쪽 사이드바 - 설정 */}
-      <div className="w-80 min-w-80 bg-white border-l border-gray-200 overflow-y-auto max-h-screen">
-        <div className="p-4">
-          <Typography variant="h6" className="font-bold text-gray-800 mb-4">
+      <div className={cn('w-80 min-w-80 bg-white border-l border-gray-200 overflow-y-auto max-h-screen')}>
+        <div className={cn('p-4')}>
+          <Typography variant="h6" className={cn('font-bold text-gray-800 mb-4')}>
             {activeTab === 0 ? '자유 변형 설정' : '회전 설정'}
           </Typography>
 
           {activeTab === 0 ? (
-            <div className="space-y-4">
+            <div className={cn('space-y-4')}>
               {/* 원터치 변형 프리셋 */}
               <div>
                 <PresetTransformButtons onApplyPreset={applyPresetTransform} />
@@ -737,24 +738,24 @@ const ImageProcessor: React.FC = () => {
               />
 
               {/* 전체 이동 조정 */}
-              <div className="space-y-3">
+              <div className={cn('space-y-3')}>
                 <Typography
                   variant="subtitle2"
-                  className="font-semibold text-gray-700"
+                  className={cn('font-semibold text-gray-700')}
                 >
                   전체 이동
                 </Typography>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className={cn('grid grid-cols-2 gap-2')}>
                   <div>
-                    <div className="flex items-center justify-between mb-1">
+                    <div className={cn('flex items-center justify-between mb-1')}>
                       <Typography
                         variant="caption"
-                        className="text-gray-600 text-xs"
+                        className={cn('text-gray-600 text-xs')}
                       >
                         상하 이동
                       </Typography>
-                      <div className="flex gap-1">
+                      <div className={cn('flex gap-1')}>
                         <IconButton
                           size="small"
                           onClick={() => adjustVertical('up', 1)}
@@ -773,14 +774,14 @@ const ImageProcessor: React.FC = () => {
                     </div>
                   </div>
                   <div>
-                    <div className="flex items-center justify-between mb-1">
+                    <div className={cn('flex items-center justify-between mb-1')}>
                       <Typography
                         variant="caption"
-                        className="text-gray-600 text-xs"
+                        className={cn('text-gray-600 text-xs')}
                       >
                         좌우 이동
                       </Typography>
-                      <div className="flex gap-1">
+                      <div className={cn('flex gap-1')}>
                         <IconButton
                           size="small"
                           onClick={() => adjustHorizontal('right', 1)}
@@ -817,17 +818,17 @@ const ImageProcessor: React.FC = () => {
                 초기화
               </Button>
 
-              <div className="text-xs text-gray-500 p-3 bg-gray-50 rounded">
+              <div className={cn('text-xs text-gray-500 p-3 bg-gray-50 rounded')}>
                 <strong>사용법:</strong>
-                <br />• <span className="text-blue-600">●</span>{' '}
-                <span className="text-green-600">●</span>{' '}
-                <span className="text-red-600">●</span>{' '}
-                <span className="text-yellow-600">●</span> 모서리를 드래그하여
+                <br />• <span className={cn('text-blue-600')}>●</span>{' '}
+                <span className={cn('text-green-600')}>●</span>{' '}
+                <span className={cn('text-red-600')}>●</span>{' '}
+                <span className={cn('text-yellow-600')}>●</span> 모서리를 드래그하여
                 변형
-                <br />• <span className="text-purple-600">■</span>{' '}
-                <span className="text-cyan-600">■</span>{' '}
-                <span className="text-orange-600">■</span>{' '}
-                <span className="text-lime-600">■</span> 변의 중점을 드래그하여
+                <br />• <span className={cn('text-purple-600')}>■</span>{' '}
+                <span className={cn('text-cyan-600')}>■</span>{' '}
+                <span className={cn('text-orange-600')}>■</span>{' '}
+                <span className={cn('text-lime-600')}>■</span> 변의 중점을 드래그하여
                 변형
                 <br />
                 • 화살표 버튼으로 1픽셀 단위 조정
@@ -838,12 +839,12 @@ const ImageProcessor: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className={cn('space-y-4')}>
               {/* 회전 각도 */}
               <div>
                 <Typography
                   variant="subtitle2"
-                  className="font-semibold mb-2 text-gray-700"
+                  className={cn('font-semibold mb-2 text-gray-700')}
                 >
                   회전 각도: {rotation}°
                 </Typography>
@@ -856,7 +857,7 @@ const ImageProcessor: React.FC = () => {
                   valueLabelDisplay="auto"
                   sx={{ color: '#3b82f6' }}
                 />
-                <div className="flex gap-1 mt-2">
+                <div className={cn('flex gap-1 mt-2')}>
                   {[0, 90, 180, -90].map((angle) => (
                     <Button
                       key={angle}
@@ -881,11 +882,11 @@ const ImageProcessor: React.FC = () => {
               <div>
                 <Typography
                   variant="subtitle2"
-                  className="font-semibold mb-2 text-gray-700"
+                  className={cn('font-semibold mb-2 text-gray-700')}
                 >
                   반전 설정
                 </Typography>
-                <div className="space-y-2">
+                <div className={cn('space-y-2')}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -895,7 +896,7 @@ const ImageProcessor: React.FC = () => {
                       />
                     }
                     label="좌우 반전"
-                    className="block"
+                    className={cn('block')}
                   />
                   <FormControlLabel
                     control={
@@ -906,7 +907,7 @@ const ImageProcessor: React.FC = () => {
                       />
                     }
                     label="상하 반전"
-                    className="block"
+                    className={cn('block')}
                   />
                 </div>
               </div>

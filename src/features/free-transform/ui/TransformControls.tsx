@@ -15,7 +15,8 @@ import {
   KeyboardArrowDown,
   RestartAlt
 } from '@mui/icons-material';
-import type { TransformMode } from '../../../shared/types';
+import type { TransformMode } from '@/shared/types';
+import { cn } from '@/shared/lib';
 
 interface Props {
   transformMode: TransformMode;
@@ -66,32 +67,32 @@ export const TransformControls: React.FC<Props> = ({
   ] as const;
 
   return (
-    <Card className="shadow-lg border-0">
-      <CardContent className="p-0">
-        <Box className="px-6 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
-          <Typography variant="h6" className="font-bold text-gray-800">
+    <Card className={cn('shadow-lg border-0')}>
+      <CardContent className={cn('p-0')}>
+        <Box className={cn('px-6 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b')}>
+          <Typography variant="h6" className={cn('font-bold text-gray-800')}>
             모서리 조정
           </Typography>
-          <Typography variant="body2" className="text-gray-600 mt-1">
+          <Typography variant="body2" className={cn('text-gray-600 mt-1')}>
             {getModeDescription(transformMode)}
           </Typography>
         </Box>
 
-        <Box className="p-6 space-y-6">
+        <Box className={cn('p-6 space-y-6')}>
           {corners.map(({ name, key, value, setter }) => (
-            <Paper key={key} className="p-4 bg-gradient-to-r from-gray-50 to-slate-50 rounded-2xl border border-gray-100">
-              <Box className="flex items-center justify-between mb-4">
-                <Typography variant="body1" className="font-semibold text-gray-800">
+            <Paper key={key} className={cn('p-4 bg-gradient-to-r from-gray-50 to-slate-50 rounded-2xl border border-gray-100')}>
+              <Box className={cn('flex items-center justify-between mb-4')}>
+                <Typography variant="body1" className={cn('font-semibold text-gray-800')}>
                   {name} 모서리
                 </Typography>
                 <Chip 
                   label={`${value > 0 ? '+' : ''}${value}px`} 
                   size="small" 
-                  className="bg-blue-100 text-blue-800 font-bold"
+                  className={cn('bg-blue-100 text-blue-800 font-bold')}
                 />
               </Box>
 
-              <Box className="flex items-center gap-3">
+              <Box className={cn('flex items-center gap-3')}>
                 <IconButton
                   size="small"
                   onClick={() => adjustVertical(key as any, 'up', 2)}
@@ -107,7 +108,7 @@ export const TransformControls: React.FC<Props> = ({
                     };
                     document.addEventListener('mouseup', up);
                   }}
-                  className="bg-white shadow-md hover:shadow-lg transition-shadow"
+                  className={cn('bg-white shadow-md hover:shadow-lg transition-shadow')}
                   sx={{
                     border: '1px solid #e5e7eb',
                     '&:hover': {
@@ -116,10 +117,10 @@ export const TransformControls: React.FC<Props> = ({
                     }
                   }}
                 >
-                  <KeyboardArrowUp className="text-blue-600" />
+                  <KeyboardArrowUp className={cn('text-blue-600')} />
                 </IconButton>
 
-                <Box className="flex-1">
+                <Box className={cn('flex-1')}>
                   <Slider
                     value={value}
                     onChange={(_, newValue) => setter(newValue as number)}
@@ -127,7 +128,7 @@ export const TransformControls: React.FC<Props> = ({
                     max={100}
                     step={1}
                     valueLabelDisplay="auto"
-                    className="mx-2"
+                    className={cn('mx-2')}
                     sx={{
                       color: '#3b82f6',
                       height: 8,
@@ -154,7 +155,7 @@ export const TransformControls: React.FC<Props> = ({
                       }
                     }}
                   />
-                  <Box className="flex justify-between text-xs text-gray-500 mt-1 px-2">
+                  <Box className={cn('flex justify-between text-xs text-gray-500 mt-1 px-2')}>
                     <span>-100</span>
                     <span>0</span>
                     <span>+100</span>
@@ -176,7 +177,7 @@ export const TransformControls: React.FC<Props> = ({
                     };
                     document.addEventListener('mouseup', up);
                   }}
-                  className="bg-white shadow-md hover:shadow-lg transition-shadow"
+                  className={cn('bg-white shadow-md hover:shadow-lg transition-shadow')}
                   sx={{
                     border: '1px solid #e5e7eb',
                     '&:hover': {
@@ -185,7 +186,7 @@ export const TransformControls: React.FC<Props> = ({
                     }
                   }}
                 >
-                  <KeyboardArrowDown className="text-blue-600" />
+                  <KeyboardArrowDown className={cn('text-blue-600')} />
                 </IconButton>
               </Box>
             </Paper>
@@ -196,7 +197,7 @@ export const TransformControls: React.FC<Props> = ({
             variant="outlined"
             fullWidth
             startIcon={<RestartAlt />}
-            className="py-3 text-sm font-bold border-2 rounded-xl"
+            className={cn('py-3 text-sm font-bold border-2 rounded-xl')}
             sx={{
               borderColor: '#d1d5db',
               color: '#374151',

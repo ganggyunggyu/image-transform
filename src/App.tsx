@@ -1,112 +1,88 @@
-import React, { useState } from 'react';
-import { Provider } from 'jotai';
-import {
-  Box,
-  Container,
-  Tabs,
-  Tab,
-  Paper,
-} from '@mui/material';
-import { ContentGenerator } from '@/widgets/content-generator';
-import { ImageProcessor } from '@/widgets/image-processor';
+import React from 'react';
+import { Provider as JotaiProvider } from 'jotai';
+import { BrowserRouter, Routes, Route, Link as RouterLink } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AppBar, Toolbar, Button, Box, Stack, CssBaseline } from '@mui/material';
+import { HomePage } from '@/pages/home';
+import { ContentGeneratorPage } from '@/pages/content-generator';
+import { ImageProcessorPage } from '@/pages/image-processor';
 import { cn } from '@/shared/lib';
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
+const AppShell: React.FC = () => {
   return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`tabpanel-${index}`}
-      aria-labelledby={`tab-${index}`}
-      className={cn('w-full')}
-      {...other}
-    >
-      {value === index && <Box className={cn('py-6')}>{children}</Box>}
-    </div>
-  );
-}
-
-function App() {
-  const [tabValue, setTabValue] = useState(1);
-
-  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-  };
-
-  return (
-    <Provider>
-      <Box className={cn('min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-slate-100')}>
-        <Container
-          maxWidth={false}
-          className={cn('py-6 px-8 w-screen max-w-screen mx-auto')}
-        >
-          <Paper
-            elevation={3}
-            className={cn('rounded-2xl overflow-hidden bg-white/90 backdrop-blur-sm border border-white/20')}
+    <React.Fragment>
+      <CssBaseline />
+      <AppBar
+        position="static"
+        elevation={0}
+        className={cn('border-b border-slate-200 bg-white/80 backdrop-blur')}
+      >
+        <Toolbar className={cn('flex justify-between gap-6')}> 
+          <Button
+            component={RouterLink}
+            to="/"
+            color="inherit"
+            className={cn('font-bold text-lg tracking-tight text-slate-900')}
           >
-            <Box className={cn('border-b border-gray-100')}>
-              <Tabs
-                value={tabValue}
-                onChange={handleTabChange}
-                className={cn('px-6')}
-                sx={{
-                  '& .MuiTab-root': {
-                    textTransform: 'none',
-                    fontSize: '1rem',
-                    fontWeight: 600,
-                    minHeight: 64,
-                    color: '#64748b',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      color: '#3b82f6',
-                      backgroundColor: 'rgba(59, 130, 246, 0.05)',
-                    },
-                    '&.Mui-selected': {
-                      color: '#3b82f6',
-                      fontWeight: 700,
-                    },
-                  },
-                  '& .MuiTabs-indicator': {
-                    height: 3,
-                    borderRadius: '2px 2px 0 0',
-                    background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)',
-                  },
-                }}
-              >
-                <Tab
-                  label="AI 원고 생성"
-                  id="tab-0"
-                  aria-controls="tabpanel-0"
-                  className={cn('px-8')}
-                />
-                <Tab
-                  label="이미지 변형"
-                  id="tab-1"
-                  aria-controls="tabpanel-1"
-                  className={cn('px-8')}
-                />
-              </Tabs>
-            </Box>
+            Image Transform Studio
+          </Button>
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Button
+              component={RouterLink}
+              to="/content-generator"
+              color="inherit"
+              className={cn('font-semibold text-slate-700 hover:text-indigo-600')}
+            >
+              AI 원고 생성
+            </Button>
+            <Button
+              component={RouterLink}
+              to="/image-transform"
+              color="inherit"
+              className={cn('font-semibold text-slate-700 hover:text-indigo-600')}
+            >
+              이미지 변형
+            </Button>
+          </Stack>
+        </Toolbar>
+      </AppBar>
 
-            <TabPanel value={tabValue} index={0}>
-              <ContentGenerator />
-            </TabPanel>
-            <TabPanel value={tabValue} index={1}>
-              <ImageProcessor />
-            </TabPanel>
-          </Paper>
-        </Container>
+      <Box component="main">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/content-generator" element={<ContentGeneratorPage />} />
+          <Route path="/image-transform" element={<ImageProcessorPage />} />
+        </Routes>
       </Box>
-    </Provider>
+    </React.Fragment>
   );
-}
+};
+
+const App: React.FC = () => {
+  const queryClient = React.useMemo(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            refetchOnWindowFocus: false,
+            retry: 1,
+          },
+        },
+      }),
+    []
+  );
+
+  return (
+    <React.Fragment>
+      <QueryClientProvider client={queryClient}>
+        <JotaiProvider>
+          <BrowserRouter>
+            <AppShell />
+          </BrowserRouter>
+        </JotaiProvider>
+      </QueryClientProvider>
+    </React.Fragment>
+  );
+};
 
 export default App;

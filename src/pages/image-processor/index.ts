@@ -1,0 +1,1 @@
+export { ImageProcessorPage } from './ImageProcessorPage';

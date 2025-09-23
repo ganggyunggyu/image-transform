@@ -1,4 +1,9 @@
-export { ImageUploadSection } from './ImageUploadSection';
-export { TransformControlsSection } from './TransformControlsSection';
-export { CanvasSection } from './CanvasSection';
+export { FileSidebar } from './FileSidebar';
+export { SettingsSidebar } from './SettingsSidebar';
+export { TransformWorkspace } from './TransformWorkspace';
+export { Workspace } from './Workspace';
 export { PerspectiveTransformImage } from './PerspectiveTransformImage';
+export { TransformControlPoints } from './TransformControlPoints';
+export { PresetTransformButtons } from './PresetTransformButtons';
+export { TransformModeSelector } from './TransformModeSelector';
+export { CornerAdjustmentControls } from './CornerAdjustmentControls';

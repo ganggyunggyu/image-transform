@@ -1,20 +1,19 @@
-import { useState, useCallback } from 'react';
-import type { TransformBounds, TransformMode, StageSize, Point } from '../../../shared/types';
-import { warpImagePerspective } from '../../../shared/utils/_opencv';
+import { useCallback } from 'react';
+import { useAtom, useAtomValue } from 'jotai';
+import type { TransformMode, Point } from '@/shared/types';
+import {
+  transformModeAtom,
+  transformBoundsAtom,
+  cornerPointsAtom,
+  stageSizeAtom,
+} from '@/shared/stores/atoms';
+import { warpImagePerspective } from '@/shared/utils/_opencv';
 
-export const useTransform = (stageSize: StageSize) => {
-  const [transformMode, setTransformMode] = useState<TransformMode>('free');
-  const [transformBounds, setTransformBounds] = useState<TransformBounds>({
-    x: 150, y: 150, width: 300, height: 200,
-  });
-  
-  // 4개 모서리 포인트를 직접 관리 (포토샵 방식)
-  const [cornerPoints, setCornerPoints] = useState<Point[]>([
-    [0, 0],   // topLeft
-    [0, 0],   // topRight  
-    [0, 0],   // bottomRight
-    [0, 0],   // bottomLeft
-  ]);
+export const useTransform = () => {
+  const [transformMode, setTransformMode] = useAtom(transformModeAtom);
+  const [transformBounds, setTransformBounds] = useAtom(transformBoundsAtom);
+  const [cornerPoints, setCornerPoints] = useAtom(cornerPointsAtom);
+  const stageSize = useAtomValue(stageSizeAtom);
 
   const resetTransform = useCallback((image?: HTMLImageElement) => {
     if (image && image.width && image.height) {
@@ -69,32 +68,34 @@ export const useTransform = (stageSize: StageSize) => {
     const clampX = Math.max(0, Math.min(stageSize.width, x));
     const clampY = Math.max(0, Math.min(stageSize.height, y));
     
-    setCornerPoints(prev => {
-      const newPoints = [...prev];
-      newPoints[index] = [clampX, clampY];
-      return newPoints;
+    setCornerPoints((prev) => {
+      const nextPoints = [...prev];
+      nextPoints[index] = [clampX, clampY];
+      return nextPoints;
     });
-  }, [stageSize]);
+  }, [setCornerPoints, stageSize]);
 
   // 포토샵 스타일 변형 모드별 조정
   const adjustCorner = useCallback((index: number, deltaX: number, deltaY: number) => {
     const [currentX, currentY] = cornerPoints[index];
     
     switch (transformMode) {
-      case 'free':
+      case 'free': {
         // 자유 변형: 선택한 모서리만 이동
         setCornerPoint(index, currentX + deltaX, currentY + deltaY);
         break;
-        
-      case 'perspective':
+      }
+
+      case 'perspective': {
         // 원근 변형: 대각선 모서리 반대 방향으로 이동
         setCornerPoint(index, currentX + deltaX, currentY + deltaY);
         const oppositeIndex = (index + 2) % 4;
         const [oppX, oppY] = cornerPoints[oppositeIndex];
         setCornerPoint(oppositeIndex, oppX - deltaX * 0.3, oppY - deltaY * 0.3);
         break;
-        
-      case 'distort':
+      }
+
+      case 'distort': {
         // 비틀기: 인접한 모서리들도 영향받음
         setCornerPoint(index, currentX + deltaX, currentY + deltaY);
         const nextIndex = (index + 1) % 4;
@@ -104,17 +105,19 @@ export const useTransform = (stageSize: StageSize) => {
         setCornerPoint(nextIndex, nextX + deltaX * 0.2, nextY + deltaY * 0.2);
         setCornerPoint(prevIndex, prevX + deltaX * 0.2, prevY + deltaY * 0.2);
         break;
-        
-      case 'skew':
+      }
+
+      case 'skew': {
         // 기울이기: 평행선 유지하며 기울임
-        if (index === 0 || index === 1) { // 상단 모서리
+        if (index === 0 || index === 1) {
           setCornerPoint(0, cornerPoints[0][0] + deltaX, cornerPoints[0][1]);
           setCornerPoint(1, cornerPoints[1][0] + deltaX, cornerPoints[1][1]);
-        } else { // 하단 모서리
+        } else {
           setCornerPoint(2, cornerPoints[2][0] + deltaX, cornerPoints[2][1]);
           setCornerPoint(3, cornerPoints[3][0] + deltaX, cornerPoints[3][1]);
         }
         break;
+      }
     }
   }, [transformMode, cornerPoints, setCornerPoint]);
 
@@ -162,7 +165,7 @@ export const useTransform = (stageSize: StageSize) => {
     const clampY = Math.max(0, Math.min(stageSize.height, newY));
 
     switch (transformMode) {
-      case 'free':
+      case 'free': {
         // 자유 변형: 해당 변의 양쪽 모서리 이동
         if (edge === 'top') {
           // 상단: topLeft와 topRight의 Y좌표 변경
@@ -182,8 +185,9 @@ export const useTransform = (stageSize: StageSize) => {
           setCornerPoint(0, clampX, cornerPoints[0][1]);
         }
         break;
+      }
 
-      case 'perspective':
+      case 'perspective': {
         // 원근 변형: 한 변을 움직이면 반대편도 반대로 이동
         if (edge === 'top') {
           const deltaY = clampY - (cornerPoints[0][1] + cornerPoints[1][1]) / 2;
@@ -215,8 +219,9 @@ export const useTransform = (stageSize: StageSize) => {
           setCornerPoint(3, cornerPoints[3][0] - deltaX * 0.3, cornerPoints[3][1]);
         }
         break;
+      }
 
-      case 'distort':
+      case 'distort': {
         // 비틀기: 해당 변과 인접한 변들도 영향받음
         if (edge === 'top') {
           const deltaY = clampY - (cornerPoints[0][1] + cornerPoints[1][1]) / 2;
@@ -248,8 +253,9 @@ export const useTransform = (stageSize: StageSize) => {
           setCornerPoint(2, cornerPoints[2][0] + deltaX * 0.2, cornerPoints[2][1]);
         }
         break;
+      }
 
-      case 'skew':
+      case 'skew': {
         // 기울이기: 평행선 유지하며 기울임
         if (edge === 'top' || edge === 'bottom') {
           const deltaX = clampX - (edge === 'top' 
@@ -279,6 +285,7 @@ export const useTransform = (stageSize: StageSize) => {
           }
         }
         break;
+      }
     }
   }, [transformMode, cornerPoints, setCornerPoint, stageSize]);
 
@@ -297,9 +304,9 @@ export const useTransform = (stageSize: StageSize) => {
   const applyPresetTransform = useCallback((presetType: string) => {
     const intensity = 8; // 변형 강도를 줄여서 점진적으로 적용
     const currentPoints = cornerPoints;
-    
+
     switch (presetType) {
-      case 'perspective-left':
+      case 'perspective-left': {
         // 좌측 원근 효과 - 기존 점들에서 조금씩 안쪽으로
         setCornerPoints([
           [currentPoints[0][0] + intensity * 0.7, currentPoints[0][1] + intensity * 0.3], // 좌상: 오른쪽+아래로
@@ -308,8 +315,9 @@ export const useTransform = (stageSize: StageSize) => {
           [currentPoints[3][0] + intensity * 0.7, currentPoints[3][1] - intensity * 0.3],   // 좌하: 오른쪽+위로
         ]);
         break;
-        
-      case 'perspective-right':
+      }
+
+      case 'perspective-right': {
         // 우측 원근 효과 - 기존 점들에서 조금씩 안쪽으로
         setCornerPoints([
           [currentPoints[0][0], currentPoints[0][1]],                                        // 좌상: 그대로
@@ -318,8 +326,9 @@ export const useTransform = (stageSize: StageSize) => {
           [currentPoints[3][0], currentPoints[3][1]],                                        // 좌하: 그대로
         ]);
         break;
-        
-      case 'perspective-top':
+      }
+
+      case 'perspective-top': {
         // 상단 원근 효과 - 기존 점들에서 조금씩 안쪽으로
         setCornerPoints([
           [currentPoints[0][0] + intensity * 0.3, currentPoints[0][1] + intensity * 0.7],   // 좌상: 오른쪽+아래로
@@ -328,8 +337,9 @@ export const useTransform = (stageSize: StageSize) => {
           [currentPoints[3][0], currentPoints[3][1]],                                        // 좌하: 그대로
         ]);
         break;
-        
-      case 'perspective-bottom':
+      }
+
+      case 'perspective-bottom': {
         // 하단 원근 효과 - 기존 점들에서 조금씩 안쪽으로
         setCornerPoints([
           [currentPoints[0][0], currentPoints[0][1]],                                        // 좌상: 그대로
@@ -338,8 +348,9 @@ export const useTransform = (stageSize: StageSize) => {
           [currentPoints[3][0] + intensity * 0.3, currentPoints[3][1] - intensity * 0.7],   // 좌하: 오른쪽+위로
         ]);
         break;
-        
-      case 'skew-left':
+      }
+
+      case 'skew-left': {
         // 좌측 기울이기 - 누적 적용
         setCornerPoints([
           [currentPoints[0][0], currentPoints[0][1] + intensity * 0.5],  // 좌상: 아래로
@@ -348,8 +359,9 @@ export const useTransform = (stageSize: StageSize) => {
           [currentPoints[3][0], currentPoints[3][1] - intensity * 0.5],  // 좌하: 위로
         ]);
         break;
-        
-      case 'skew-right':
+      }
+
+      case 'skew-right': {
         // 우측 기울이기 - 누적 적용
         setCornerPoints([
           [currentPoints[0][0], currentPoints[0][1]],                     // 좌상: 그대로
@@ -358,8 +370,9 @@ export const useTransform = (stageSize: StageSize) => {
           [currentPoints[3][0], currentPoints[3][1]],                     // 좌하: 그대로
         ]);
         break;
-        
-      case 'wave-horizontal':
+      }
+
+      case 'wave-horizontal': {
         // 수평 웨이브 - 누적 적용
         setCornerPoints([
           [currentPoints[0][0], currentPoints[0][1] - intensity * 0.4],  // 좌상: 위로
@@ -368,8 +381,9 @@ export const useTransform = (stageSize: StageSize) => {
           [currentPoints[3][0], currentPoints[3][1] - intensity * 0.4],  // 좌하: 위로
         ]);
         break;
-        
-      case 'wave-vertical':
+      }
+
+      case 'wave-vertical': {
         // 수직 웨이브 - 누적 적용
         setCornerPoints([
           [currentPoints[0][0] - intensity * 0.4, currentPoints[0][1]],  // 좌상: 좌로
@@ -378,8 +392,9 @@ export const useTransform = (stageSize: StageSize) => {
           [currentPoints[3][0] + intensity * 0.4, currentPoints[3][1]],  // 좌하: 우로
         ]);
         break;
-        
-      case 'tilt-left':
+      }
+
+      case 'tilt-left': {
         // 좌측 기울기 - 누적 적용
         setCornerPoints([
           [currentPoints[0][0] - intensity * 0.5, currentPoints[0][1]],  // 좌상: 좌로
@@ -388,8 +403,9 @@ export const useTransform = (stageSize: StageSize) => {
           [currentPoints[3][0] + intensity * 0.5, currentPoints[3][1]],  // 좌하: 우로
         ]);
         break;
-        
-      case 'tilt-right':
+      }
+
+      case 'tilt-right': {
         // 우측 기울기 - 누적 적용
         setCornerPoints([
           [currentPoints[0][0] + intensity * 0.5, currentPoints[0][1]],  // 좌상: 우로
@@ -398,8 +414,9 @@ export const useTransform = (stageSize: StageSize) => {
           [currentPoints[3][0] - intensity * 0.5, currentPoints[3][1]],  // 좌하: 좌로
         ]);
         break;
-        
-      case 'expand':
+      }
+
+      case 'expand': {
         // 확장 효과 - 누적 적용
         setCornerPoints([
           [currentPoints[0][0] - intensity * 0.6, currentPoints[0][1] - intensity * 0.6],  // 좌상: 확장
@@ -408,8 +425,9 @@ export const useTransform = (stageSize: StageSize) => {
           [currentPoints[3][0] - intensity * 0.6, currentPoints[3][1] + intensity * 0.6],  // 좌하: 확장
         ]);
         break;
-        
-      case 'contract':
+      }
+
+      case 'contract': {
         // 축소 효과 - 누적 적용
         setCornerPoints([
           [currentPoints[0][0] + intensity * 0.6, currentPoints[0][1] + intensity * 0.6],  // 좌상: 축소
@@ -418,7 +436,8 @@ export const useTransform = (stageSize: StageSize) => {
           [currentPoints[3][0] + intensity * 0.6, currentPoints[3][1] - intensity * 0.6],  // 좌하: 축소
         ]);
         break;
-        
+      }
+
       default:
         resetAllAdjustments();
         break;

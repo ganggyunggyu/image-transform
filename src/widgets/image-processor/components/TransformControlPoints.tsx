@@ -1,22 +1,20 @@
 import React from 'react';
 import { Circle, Rect } from 'react-konva';
-import type { TransformMode } from '../../../shared/types';
+import Konva from 'konva';
+import type { KonvaEventObject } from 'konva/lib/Node';
+import { useAtomValue } from 'jotai';
+import type { Point } from '@/shared/types';
+import { useTransform } from '@/features/free-transform';
+import { transformModeAtom } from '@/shared/stores/atoms';
 
-interface TransformControlPointsProps {
-  getTransformedPoints: () => { x: number; y: number }[];
-  getEdgePoints: () => { top: number[]; right: number[]; bottom: number[]; left: number[] };
-  transformMode: TransformMode;
-  onCornerDrag: (idx: number, newX: number, newY: number) => void;
-  onEdgeDrag: (edge: 'top' | 'right' | 'bottom' | 'left', newX: number, newY: number) => void;
-}
-
-export const TransformControlPoints: React.FC<TransformControlPointsProps> = ({
-  getTransformedPoints,
-  getEdgePoints,
-  transformMode,
-  onCornerDrag,
-  onEdgeDrag,
-}) => {
+export const TransformControlPoints: React.FC = () => {
+  const transformMode = useAtomValue(transformModeAtom);
+  const {
+    getTransformedPoints,
+    getEdgePoints,
+    setCornerPoint,
+    handleEdgeDrag,
+  } = useTransform();
   const cornerColors = ['#3b82f6', '#10b981', '#ef4444', '#f59e0b'];
   const edgeColors = {
     top: '#8b5cf6',
@@ -54,15 +52,15 @@ export const TransformControlPoints: React.FC<TransformControlPointsProps> = ({
             listening={true}
             hitStrokeWidth={20}
             onDragMove={(e) => {
-              onCornerDrag(idx, e.target.x(), e.target.y());
+              setCornerPoint(idx, e.target.x(), e.target.y());
             }}
-            onMouseEnter={(e) => {
-              const shape = e.target as any;
+            onMouseEnter={(event: KonvaEventObject<MouseEvent>) => {
+              const shape = event.target as Konva.Circle;
               shape.radius(14);
               shape.strokeWidth(5);
             }}
-            onMouseLeave={(e) => {
-              const shape = e.target as any;
+            onMouseLeave={(event: KonvaEventObject<MouseEvent>) => {
+              const shape = event.target as Konva.Circle;
               shape.radius(12);
               shape.strokeWidth(4);
             }}
@@ -100,19 +98,19 @@ export const TransformControlPoints: React.FC<TransformControlPointsProps> = ({
             hitStrokeWidth={20}
             onDragMove={(e) => {
               if (isEdgeDraggable) {
-                onEdgeDrag(edge, e.target.x() + 12, e.target.y() + 12);
+                handleEdgeDrag(edge, e.target.x() + 12, e.target.y() + 12);
               }
             }}
-            onMouseEnter={(e) => {
+            onMouseEnter={(event: KonvaEventObject<MouseEvent>) => {
               if (isEdgeDraggable) {
-                e.target.scaleX(1.2);
-                e.target.scaleY(1.2);
+                event.target.scaleX(1.2);
+                event.target.scaleY(1.2);
               }
             }}
-            onMouseLeave={(e) => {
+            onMouseLeave={(event: KonvaEventObject<MouseEvent>) => {
               if (isEdgeDraggable) {
-                e.target.scaleX(1);
-                e.target.scaleY(1);
+                event.target.scaleX(1);
+                event.target.scaleY(1);
               }
             }}
           />

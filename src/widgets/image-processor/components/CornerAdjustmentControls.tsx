@@ -1,7 +1,7 @@
 import React from 'react';
 import { Typography, IconButton } from '@mui/material';
 import { KeyboardArrowUp as ArrowUpIcon, KeyboardArrowDown as ArrowDownIcon } from '@mui/icons-material';
-import type { Point, TransformMode } from '../../../shared/types';
+import type { Point, TransformMode } from '@/shared/types';
 
 interface CornerAdjustmentControlsProps {
   cornerPoints: Point[];

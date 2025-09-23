@@ -1,21 +1,20 @@
 import React from 'react';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { Box, Typography, Chip, List, ListItem, ListItemText, ListItemIcon, Avatar } from '@mui/material';
 import { Image as ImageIcon, CheckCircle as CheckCircleIcon } from '@mui/icons-material';
-import type { ImageFile } from '@/shared/types';
 import { formatFileSize } from '@/shared/utils';
 import { cn } from '@/shared/lib';
+import {
+  imageFilesAtom,
+  selectedImageAtom,
+  selectImageAtom,
+} from '@/shared/stores/atoms';
 
-interface Props {
-  imageFiles: ImageFile[];
-  selectedImage: ImageFile | null;
-  onImageSelect: (image: ImageFile) => void;
-}
+export const ImageList: React.FC = () => {
+  const imageFiles = useAtomValue(imageFilesAtom);
+  const selectedImage = useAtomValue(selectedImageAtom);
+  const selectImage = useSetAtom(selectImageAtom);
 
-export const ImageList: React.FC<Props> = ({
-  imageFiles,
-  selectedImage,
-  onImageSelect
-}) => {
   return (
     <Box className={cn('flex flex-col h-full')}>
       <Box className={cn('flex items-center justify-between mb-4')}>
@@ -42,7 +41,7 @@ export const ImageList: React.FC<Props> = ({
             {imageFiles.map((img) => (
               <ListItem
                 key={img.id}
-                onClick={() => onImageSelect(img)}
+                onClick={() => selectImage(img)}
                 className={cn(
                   'group mb-2 rounded-2xl cursor-pointer transition-all duration-300 ease-in-out',
                   selectedImage?.id === img.id

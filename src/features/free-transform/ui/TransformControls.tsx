@@ -36,6 +36,15 @@ interface Props {
   onResetAll: () => void;
 }
 
+type CornerKey = 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
+
+interface CornerConfig {
+  name: string;
+  key: CornerKey;
+  value: number;
+  setter: (value: number) => void;
+}
+
 const getModeDescription = (mode: TransformMode): string => {
   const descriptions = {
     free: '모든 모서리를 자유롭게 드래그할 수 있습니다',
@@ -59,12 +68,30 @@ export const TransformControls: React.FC<Props> = ({
   adjustVertical,
   onResetAll,
 }) => {
-  const corners = [
+  const corners: CornerConfig[] = [
     { name: '좌상', key: 'topLeft', value: topLeftY, setter: setTopLeftY },
     { name: '우상', key: 'topRight', value: topRightY, setter: setTopRightY },
     { name: '좌하', key: 'bottomLeft', value: bottomLeftY, setter: setBottomLeftY },
     { name: '우하', key: 'bottomRight', value: bottomRightY, setter: setBottomRightY },
-  ] as const;
+  ];
+
+  const createPressHandler = (cornerKey: CornerKey, direction: 'up' | 'down') => {
+    return (event: React.MouseEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+      adjustVertical(cornerKey, direction, 2);
+
+      const interval = setInterval(() => {
+        adjustVertical(cornerKey, direction, 1);
+      }, 100);
+
+      const handleMouseUp = () => {
+        clearInterval(interval);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+
+      document.addEventListener('mouseup', handleMouseUp);
+    };
+  };
 
   return (
     <Card className={cn('shadow-lg border-0')}>
@@ -95,19 +122,8 @@ export const TransformControls: React.FC<Props> = ({
               <Box className={cn('flex items-center gap-3')}>
                 <IconButton
                   size="small"
-                  onClick={() => adjustVertical(key as any, 'up', 2)}
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    const interval = setInterval(
-                      () => adjustVertical(key as any, 'up', 1),
-                      100
-                    );
-                    const up = () => {
-                      clearInterval(interval);
-                      document.removeEventListener('mouseup', up);
-                    };
-                    document.addEventListener('mouseup', up);
-                  }}
+                  onClick={() => adjustVertical(key, 'up', 2)}
+                  onMouseDown={createPressHandler(key, 'up')}
                   className={cn('bg-white shadow-md hover:shadow-lg transition-shadow')}
                   sx={{
                     border: '1px solid #e5e7eb',
@@ -123,7 +139,11 @@ export const TransformControls: React.FC<Props> = ({
                 <Box className={cn('flex-1')}>
                   <Slider
                     value={value}
-                    onChange={(_, newValue) => setter(newValue as number)}
+                    onChange={(_, newValue) => {
+                      if (typeof newValue === 'number') {
+                        setter(newValue);
+                      }
+                    }}
                     min={-100}
                     max={100}
                     step={1}
@@ -164,19 +184,8 @@ export const TransformControls: React.FC<Props> = ({
 
                 <IconButton
                   size="small"
-                  onClick={() => adjustVertical(key as any, 'down', 2)}
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    const interval = setInterval(
-                      () => adjustVertical(key as any, 'down', 1),
-                      100
-                    );
-                    const up = () => {
-                      clearInterval(interval);
-                      document.removeEventListener('mouseup', up);
-                    };
-                    document.addEventListener('mouseup', up);
-                  }}
+                  onClick={() => adjustVertical(key, 'down', 2)}
+                  onMouseDown={createPressHandler(key, 'down')}
                   className={cn('bg-white shadow-md hover:shadow-lg transition-shadow')}
                   sx={{
                     border: '1px solid #e5e7eb',

@@ -1,21 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Image as KonvaImage } from 'react-konva';
-import { warpImagePerspective } from '../../../shared/utils';
-import type { Point } from '../../../shared/types';
+import { useAtomValue } from 'jotai';
+import { warpImagePerspective } from '@/shared/utils';
+import { useTransform } from '@/features/free-transform';
+import {
+  imageElementAtom,
+  transformBoundsAtom,
+  stageSizeAtom,
+} from '@/shared/stores/atoms';
+import type { Point } from '@/shared/types';
 
-interface PerspectiveTransformImageProps {
-  image: HTMLImageElement;
-  getTransformedPoints: () => { x: number; y: number }[];
-  transformBounds: { x: number; y: number; width: number; height: number };
-  stageSize: { width: number; height: number };
-}
+export const PerspectiveTransformImage: React.FC = () => {
+  const image = useAtomValue(imageElementAtom);
+  const transformBounds = useAtomValue(transformBoundsAtom);
+  const stageSize = useAtomValue(stageSizeAtom);
+  const { getTransformedPoints } = useTransform();
 
-export const PerspectiveTransformImage: React.FC<PerspectiveTransformImageProps> = ({
-  image,
-  getTransformedPoints,
-  transformBounds,
-  stageSize,
-}) => {
   const [transformedImageSrc, setTransformedImageSrc] = useState<string | null>(null);
 
   useEffect(() => {
@@ -33,14 +33,8 @@ export const PerspectiveTransformImage: React.FC<PerspectiveTransformImageProps>
           imgEl: image,
           srcSize: { w: image.naturalWidth, h: image.naturalHeight },
           dstStagePoints,
-          stageTL: [0, 0],
-          stageScale: 1,
-          stageSize: {
-            x: 0,
-            y: 0,
-            width: stageSize.width,
-            height: stageSize.height,
-          },
+          stageTL: [transformBounds.x, transformBounds.y],
+          stageSize: transformBounds,
         });
 
         setTransformedImageSrc(dataUrl);
@@ -52,9 +46,23 @@ export const PerspectiveTransformImage: React.FC<PerspectiveTransformImageProps>
     if (image) {
       applyPerspectiveTransform();
     }
-  }, [image, getTransformedPoints, transformBounds, stageSize]);
+  }, [image, getTransformedPoints, transformBounds]);
 
-  if (!transformedImageSrc) {
+  const transformedImage = useMemo(() => {
+    if (!transformedImageSrc) {
+      return null;
+    }
+
+    const img = new window.Image();
+    img.src = transformedImageSrc;
+    return img;
+  }, [transformedImageSrc]);
+
+  if (!image) {
+    return null;
+  }
+
+  if (!transformedImage) {
     return (
       <KonvaImage
         image={image}
@@ -67,23 +75,17 @@ export const PerspectiveTransformImage: React.FC<PerspectiveTransformImageProps>
     );
   }
 
-  // 변형된 이미지를 파란 영역 내부에 클리핑하기 위해 Group과 clip 사용
   const points = getTransformedPoints();
   
   return (
     <KonvaImage
-      image={(() => {
-        const img = new window.Image();
-        img.src = transformedImageSrc;
-        return img;
-      })()}
+      image={transformedImage}
       x={0}
       y={0}
       width={stageSize.width}
       height={stageSize.height}
       opacity={1.0}
-      clipFunc={(ctx: any) => {
-        // 4점으로 이루어진 변형 영역으로 클리핑
+      clipFunc={(ctx: CanvasRenderingContext2D) => {
         ctx.beginPath();
         ctx.moveTo(points[0].x, points[0].y);
         ctx.lineTo(points[1].x, points[1].y);

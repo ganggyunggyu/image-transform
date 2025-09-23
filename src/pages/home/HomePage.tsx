@@ -12,7 +12,7 @@ import {
   Chip,
   Divider,
 } from '@mui/material';
-import { AutoAwesome, PhotoSizeSelectLarge, Insights } from '@mui/icons-material';
+import { PhotoSizeSelectLarge, Insights, Monitor } from '@mui/icons-material';
 import { cn } from '@/shared/lib';
 
 export const HomePage: React.FC = () => {
@@ -22,39 +22,27 @@ export const HomePage: React.FC = () => {
         <Container className={cn('py-16')}>
           <Stack spacing={4} className={cn('max-w-3xl mx-auto text-center')}>
             <Chip
-              label="이미지 & 원고 자동화 플랫폼"
+              label="이미지 변형 스튜디오"
               color="primary"
               variant="outlined"
               className={cn('self-center font-semibold tracking-wide')}
             />
             <Typography variant="h3" className={cn('font-bold text-slate-900 leading-tight')}>
-              콘텐츠 제작을 빠르게 정리하고 시각 자료를 한 번에 다듬어보세요
+              촬영 자료를 원근, 회전, 일괄 보정까지 한 번에 처리하세요
             </Typography>
-            <Typography variant="body1" className={cn('text-slate-600')}> 
-              AI 원고 생성과 이미지 변형 툴을 통합한 워크스페이스입니다. 필요한 기능을 선택해서 바로 편집을 시작하세요.
+            <Typography variant="body1" className={cn('text-slate-600')}>
+              콘바 기반 캔버스에서 원근 조정과 회전, 대량 다운로드까지 지원합니다. 필요한 작업만 골라 빠르게 이미지를 다듬어보세요.
             </Typography>
-            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="center">
-              <Button
-                component={RouterLink}
-                to="/content-generator"
-                variant="contained"
-                size="large"
-                startIcon={<AutoAwesome />}
-                className={cn('font-semibold px-6 py-3')}
-              >
-                AI 원고 생성 바로가기
-              </Button>
-              <Button
-                component={RouterLink}
-                to="/image-transform"
-                variant="outlined"
-                size="large"
-                startIcon={<PhotoSizeSelectLarge />}
-                className={cn('font-semibold px-6 py-3')}
-              >
-                이미지 변형 시작하기
-              </Button>
-            </Stack>
+            <Button
+              component={RouterLink}
+              to="/image-transform"
+              variant="contained"
+              size="large"
+              startIcon={<PhotoSizeSelectLarge />}
+              className={cn('font-semibold px-6 py-3 self-center')}
+            >
+              이미지 변형 시작하기
+            </Button>
           </Stack>
 
           <Divider className={cn('my-16')} />
@@ -64,22 +52,22 @@ export const HomePage: React.FC = () => {
               <Card className={cn('h-full border border-slate-200 shadow-sm transition-all hover:shadow-lg')}>
                 <CardContent className={cn('space-y-4')}>
                   <Stack direction="row" spacing={2} alignItems="center">
-                    <AutoAwesome className={cn('text-indigo-500')} />
+                    <Monitor className={cn('text-indigo-500')} />
                     <Typography variant="h6" className={cn('font-semibold text-slate-900')}>
-                      AI 원고 생성
+                      캔버스 기반 정밀 편집
                     </Typography>
                   </Stack>
                   <Typography variant="body2" className={cn('text-slate-600 leading-relaxed')}>
-                    주제와 스타일만 정하면 구조화된 원고를 빠르게 받을 수 있습니다. 초안부터 마감 직전까지 필요한 정보를 자동으로 정리해줍니다.
+                    변형 핸들을 자유롭게 움직이며 투시, 스큐, 비틀기 모드를 전환할 수 있습니다. 캔버스 확대·축소와 프리셋으로 반복 작업을 줄여보세요.
                   </Typography>
                   <Button
                     component={RouterLink}
-                    to="/content-generator"
+                    to="/image-transform"
                     variant="text"
                     endIcon={<Insights />}
                     className={cn('font-semibold self-start px-0')}
                   >
-                    기능 자세히 보기
+                    캔버스로 이동
                   </Button>
                 </CardContent>
               </Card>
@@ -104,7 +92,7 @@ export const HomePage: React.FC = () => {
                     endIcon={<Insights />}
                     className={cn('font-semibold self-start px-0')}
                   >
-                    기능 자세히 보기
+                    워크플로우 살펴보기
                   </Button>
                 </CardContent>
               </Card>

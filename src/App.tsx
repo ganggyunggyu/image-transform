@@ -4,7 +4,6 @@ import { BrowserRouter, Routes, Route, Link as RouterLink } from 'react-router-d
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppBar, Toolbar, Button, Box, Stack, CssBaseline } from '@mui/material';
 import { HomePage } from '@/pages/home';
-import { ContentGeneratorPage } from '@/pages/content-generator';
 import { ImageProcessorPage } from '@/pages/image-processor';
 import { cn } from '@/shared/lib';
 
@@ -29,14 +28,6 @@ const AppShell: React.FC = () => {
           <Stack direction="row" spacing={2} alignItems="center">
             <Button
               component={RouterLink}
-              to="/content-generator"
-              color="inherit"
-              className={cn('font-semibold text-slate-700 hover:text-indigo-600')}
-            >
-              AI 원고 생성
-            </Button>
-            <Button
-              component={RouterLink}
               to="/image-transform"
               color="inherit"
               className={cn('font-semibold text-slate-700 hover:text-indigo-600')}
@@ -50,7 +41,6 @@ const AppShell: React.FC = () => {
       <Box component="main">
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/content-generator" element={<ContentGeneratorPage />} />
           <Route path="/image-transform" element={<ImageProcessorPage />} />
         </Routes>
       </Box>

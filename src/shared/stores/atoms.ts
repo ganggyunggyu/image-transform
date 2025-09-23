@@ -1,11 +1,19 @@
 import { atom } from 'jotai';
-import type { ImageFile, AlertSeverity, StageSize, TransformMode } from '../types';
+import type {
+  ImageFile,
+  AlertSeverity,
+  StageSize,
+  TransformMode,
+  TransformBounds,
+  Point,
+} from '../types';
 
 // 이미지 관련 상태
 export const imageFilesAtom = atom<ImageFile[]>([]);
 export const selectedImageAtom = atom<ImageFile | null>(null);
 export const isImageLoadedAtom = atom(false);
 export const isProcessingAtom = atom(false);
+export const imageElementAtom = atom<HTMLImageElement | null>(null);
 
 // UI 상태
 export const activeTabAtom = atom(0);
@@ -24,6 +32,18 @@ export const rotationAtom = atom(0);
 export const flipHorizontalAtom = atom(false);
 export const flipVerticalAtom = atom(false);
 export const transformModeAtom = atom<TransformMode>('free');
+export const transformBoundsAtom = atom<TransformBounds>({
+  x: 150,
+  y: 150,
+  width: 300,
+  height: 200,
+});
+export const cornerPointsAtom = atom<Point[]>([
+  [0, 0],
+  [0, 0],
+  [0, 0],
+  [0, 0],
+]);
 
 // 파생 상태 (computed atoms)
 export const hasImagesAtom = atom((get) => get(imageFilesAtom).length > 0);
@@ -34,10 +54,17 @@ export const currentImageIndexAtom = atom((get) => {
 });
 
 // 액션 atoms (functions)
-export const clearAllImagesAtom = atom(null, (_, set) => {
+export const clearAllImagesAtom = atom(null, (get, set) => {
+  const currentFiles = get(imageFilesAtom);
+  currentFiles.forEach((file) => {
+    if (file.preview) {
+      URL.revokeObjectURL(file.preview);
+    }
+  });
   set(imageFilesAtom, []);
   set(selectedImageAtom, null);
   set(isImageLoadedAtom, false);
+  set(imageElementAtom, null);
 });
 
 export const addImageFilesAtom = atom(null, (get, set, newFiles: ImageFile[]) => {
@@ -49,6 +76,7 @@ export const addImageFilesAtom = atom(null, (get, set, newFiles: ImageFile[]) =>
   if (!selected && newFiles.length > 0) {
     set(selectedImageAtom, newFiles[0]);
     set(isImageLoadedAtom, false);
+    set(imageElementAtom, null);
   }
 });
 
@@ -59,6 +87,7 @@ export const selectImageAtom = atom(null, (_, set, imageFile: ImageFile | null) 
   set(rotationAtom, 0);
   set(flipHorizontalAtom, false);
   set(flipVerticalAtom, false);
+  set(imageElementAtom, null);
 });
 
 export const showAlertMessageAtom = atom(null, (_, set, message: string, severity: AlertSeverity = 'info') => {

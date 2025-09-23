@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Typography } from '@mui/material';
-import type { TransformMode } from '../../../shared/types';
+import type { TransformMode } from '@/shared/types';
 
 interface TransformModeSelectorProps {
   transformMode: TransformMode;

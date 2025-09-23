@@ -1,23 +1,23 @@
 import React from 'react';
 import { useDropzone } from 'react-dropzone';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { Box, Button, Typography, Paper } from '@mui/material';
 import { CloudUpload as CloudUploadIcon, DeleteSweep as DeleteSweepIcon } from '@mui/icons-material';
 import type { ImageFile } from '@/shared/types';
 import { cn } from '@/shared/lib';
+import {
+  imageFilesAtom,
+  addImageFilesAtom,
+  clearAllImagesAtom,
+  showAlertMessageAtom,
+} from '@/shared/stores/atoms';
 
-interface Props {
-  imageFiles: ImageFile[];
-  onFilesAdd: (files: ImageFile[]) => void;
-  onClearFiles: () => void;
-  isDragActive: boolean;
-}
+export const ImageUploader: React.FC = () => {
+  const imageFiles = useAtomValue(imageFilesAtom);
+  const addImageFiles = useSetAtom(addImageFilesAtom);
+  const clearAllImages = useSetAtom(clearAllImagesAtom);
+  const showAlertMessage = useSetAtom(showAlertMessageAtom);
 
-export const ImageUploader: React.FC<Props> = ({
-  imageFiles,
-  onFilesAdd,
-  onClearFiles,
-  isDragActive
-}) => {
   const onDrop = (acceptedFiles: File[]) => {
     const newFiles: ImageFile[] = acceptedFiles
       .filter((file) => file.type.startsWith('image/'))
@@ -29,10 +29,13 @@ export const ImageUploader: React.FC<Props> = ({
         size: file.size,
       }));
 
-    onFilesAdd(newFiles);
+    if (newFiles.length > 0) {
+      addImageFiles(newFiles);
+      showAlertMessage(`${newFiles.length}개의 이미지가 추가되었습니다.`, 'success');
+    }
   };
 
-  const { getRootProps, getInputProps } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.bmp', '.gif', '.tiff'] },
   });
@@ -81,7 +84,12 @@ export const ImageUploader: React.FC<Props> = ({
       </Paper>
 
       <Button
-        onClick={onClearFiles}
+        onClick={() => {
+          if (imageFiles.length > 0) {
+            clearAllImages();
+            showAlertMessage('모든 파일이 제거되었습니다.', 'info');
+          }
+        }}
         disabled={imageFiles.length === 0}
         variant="outlined"
         color="error"

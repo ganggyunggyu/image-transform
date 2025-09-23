@@ -1,68 +1,59 @@
 # image-transform AGENT
 
-## Repository Snapshot
-- React 19 + TypeScript + Vite 7 single-page app under `src/`
-- UI stack mixes Tailwind CSS 4.x utility classes with MUI 7 components
-- Image workflow relies on Konva/react-konva, Fabric, html2canvas, react-dropzone, and JSZip
-- Global state currently handled via local component hooks and plain Jotai atoms in `src/shared/stores`
-- No backend / Python layer checked in; any future server must mirror the shared FSD guidance below
+## Stack Signals
+- React 19 + TypeScript + Vite 7 entry via `src/main.tsx`
+- Styling blends Tailwind CSS 4 utility tokens (`@tailwindcss/vite`) with MUI 7 components; `src/shared/lib/cn.ts` (clsx + tailwind-merge) already enforces class composition
+- State providers bootstrapped in `src/App.tsx`: TanStack Query 5 `QueryClientProvider`, Jotai atom root, React Router v7 shell
+- Image workflow anchored on Konva/react-konva, Fabric, html2canvas, JSZip, and custom perspective math under `src/shared/utils`
+- Absolute imports resolved through `@/*` path mapping defined in `tsconfig.app.json` and consumed throughout widgets/features
 
-## Current FSD Layout (front-end)
+## Source Topology
 ```
 src/
-├── App.tsx                // entry shell with tabbed layout
-├── assets/                // static assets (images, fonts)
-├── features/              // domain-specific logic blocks
-│   ├── free-transform/    // transformation hooks (useTransform)
-│   └── image-upload/      // drag and drop uploader + list UI
-├── shared/                // types, atoms, utils (opencv, download)
-├── widgets/               // page-level compositions
-│   ├── content-generator/ // AI copy pipeline UI
-│   └── image-processor/   // Konva canvas workspace
-└── main.tsx               // React bootstrap
+├── app/                      # (vacant) reserve for providers/config
+├── assets/                   # static images
+├── features/
+│   ├── free-transform/       # hooks + logic for corner/edge manipulation
+│   └── image-upload/         # drag & drop uploader + list UI
+├── pages/
+│   ├── home/                 # landing hero + CTA cards
+│   └── image-processor/      # wraps ImageProcessor widget for routing
+├── shared/
+│   ├── lib/                  # cn helper, reaction utilities
+│   ├── stores/               # jotai atoms (selection, modal state)
+│   ├── types/                # ImageFile, transform typings
+│   └── utils/                # download helpers, math, fabric, konva bridges
+├── widgets/
+│   └── image-processor/      # Konva canvas, presets, controls
+├── App.tsx                   # provider shell + top nav
+└── main.tsx                  # StrictMode root
 ```
-- `app/`, `entities/`, `pages/`, `widgets/…/components/` have gaps; fill them as the project grows but keep import rules aligned with the provided hierarchy
+- `app/` and `entities/` folders remain empty placeholders; populate when config or domain models mature, keeping FSD import direction intact (`pages` consumes `widgets/features/entities/shared` only)
 
-## Front-End Conventions To Enforce
-- Introduce absolute import aliases (`@/shared`, `@/features`, …) in `tsconfig.app.json` and `vite.config.ts`; eliminate deep relative paths
-- Add a dedicated `cn` helper under `src/shared/lib/cn` (clsx + tailwind-merge) and wrap every `className` binding with it
-- Use `React.Fragment` (no shorthand) when grouping siblings without a container
-- Keep state colocated in Jotai atoms; when atoms feed multiple domains, expose selector hooks inside `features/*/hooks`
-- Integrate TanStack Query v5 (`@tanstack/react-query`) with a QueryClient wired in the top-level provider layer; prefer it for async fetch/mutation workflows instead of manual axios calls in components
-- Maintain Tailwind 4 usage via the Vite plugin; avoid inline styles unless Material UI demands `sx`
-- Prefer icon libraries (MUI icons) over emoji for UI affordances to satisfy publishing guidance
-
-## Styling & Design Notes
-- Target a modern, clean surface: layered gradients (`bg-gradient-to-br`), subtle shadows, and large hit areas already in use should remain consistent
-- When mixing MUI with Tailwind, keep typography and spacing coherent by mapping token sizes (e.g., Tailwind `text-base` ≈ MUI `1rem`)
-- Avoid obvious AI phrasing in UI copy; keep Korean prompts conversational and concise
-
-## State & Data Flow
-- `widgets/image-processor` drives most interactions; Konva stage dimensions derive from `useTransform`
-- `shared/utils/download.ts` bundles processed canvases via JSZip; ensure any new async steps surface progress indicators through Jotai or TanStack Query observers
-- Introduce centralized API clients (`src/shared/api`) once backend endpoints exist; wrap axios instances with interceptors in `src/app/provider`
+## Front-End Guardrails
+- Keep every `className` routed through `cn(...)`; favor Tailwind tokens over inline styles, pair with MUI `sx` only when unavoidable
+- Maintain React.Fragment verbosity (`<React.Fragment>`)—no shorthand fragments per project mandate
+- Centralize async ops with TanStack Query; expose mutations/queries as domain hooks under `features/*/hooks`
+- Persist shared state through Jotai atoms inside `src/shared/stores`, but surface domain-aware selectors inside `features`
+- Prefer icon libraries (MUI Icons, react-icons) rather than emoji for affordances to meet publishing rules
+- Avoid spinning up Vite dev server unless the request is explicit
 
 ## Build & QA Commands
 ```bash
-npm run dev       # Vite dev server (leave stopped unless explicitly requested)
-npm run build     # Type-check + bundle
+npm run dev       # Vite dev server (keep stopped by default)
+npm run build     # Type-check + production bundle
 npm run lint      # ESLint flat config
-npm run preview   # Serve production build
+npm run preview   # Preview production build
 ```
-- Add Vitest or Playwright suites under `tests/` when regression coverage becomes necessary
+- Adopt Vitest/React Testing Library under `tests/` when regression coverage becomes critical
 
-## Immediate Backlog
-1. Path alias + absolute imports
-2. Shared `cn` helper + Tailwind class normalization
-3. TanStack Query setup with provider scaffold (query client, suspense boundaries)
-4. Split mixed concerns in `ImageProcessor.tsx` into sub-features/widgets for maintainability
+## Immediate Backlog Radar
+1. Extract provider wiring (Router, QueryClient, Jotai) into `src/app/providers` for reuse/testing
+2. Continue refining `widgets/image-processor` composition for performance (memoization, suspense states)
+3. Add persisted storage/replay for transform presets using Jotai atoms + TanStack Query infinite queries when backend endpoints arrive
+4. Harden download pipeline with progress UI (JSZip) and failure notifications via MUI `Alert`
 
-## Python Track Reminder
-- No Python code currently present; if a FastAPI/Django/Flask backend is added, enforce the provided FSD directory contract under `src/` (e.g., `src/app`, `src/entities`, `src/features`, `src/shared`, `src/services`)
-- Use absolute imports from `src.*`, Pydantic models for any data schema, and type hint every function (Python 3.8+ target)
-- Centralize settings via `pydantic-settings` and register global exception handlers mirroring the shared blueprint
-
-## Coordination Tips
-- Default to ASCII in source files; only keep non-ASCII characters when translating user-facing copy
-- Do not start local servers unless the user explicitly asks
-- Comments should stay minimal—only clarify complex logic or non-obvious trade-offs
+## Python Track Placeholder
+- No backend present; when introducing FastAPI/Django/Flask, obey the supplied Python FSD directory contract under `src/` (`app/`, `entities/`, `features/`, `shared/`, `services/`, etc.)
+- Enforce absolute imports (`from src.entities.user import User`), Pydantic models for every DTO, and exhaustive typing (`from __future__ import annotations`)
+- Register global exception handlers, logging setup, and dependency injection modules mirroring the shared blueprint to keep parity with the front-end structure

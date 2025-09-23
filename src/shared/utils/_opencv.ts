@@ -1,111 +1,168 @@
-import type { Point, TransformBounds } from '../types';
+import type { Point, TransformBounds } from '@/shared/types';
+
+type OpenCVSize = unknown;
+type OpenCVScalar = unknown;
+
+interface OpenCVMat {
+  delete: () => void;
+}
+
+interface OpenCV {
+  ready?: boolean;
+  onRuntimeInitialized?: () => void;
+  imread: (element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement) => OpenCVMat;
+  matFromArray: (rows: number, cols: number, type: number, data: number[]) => OpenCVMat;
+  getPerspectiveTransform: (src: OpenCVMat, dst: OpenCVMat) => OpenCVMat;
+  Mat: new () => OpenCVMat;
+  Size: new (width: number, height: number) => OpenCVSize;
+  Scalar: new (...values: number[]) => OpenCVScalar;
+  warpPerspective: (
+    src: OpenCVMat,
+    dst: OpenCVMat,
+    transform: OpenCVMat,
+    dsize: OpenCVSize,
+    interpolation: number,
+    borderMode: number,
+    borderValue: OpenCVScalar
+  ) => void;
+  imshow: (canvas: HTMLCanvasElement | string, mat: OpenCVMat) => void;
+  INTER_LINEAR: number;
+  BORDER_CONSTANT: number;
+  CV_32FC2: number;
+}
+
+declare global {
+  interface Window {
+    cv?: OpenCV;
+  }
+}
 
 let cvReadyPromise: Promise<void> | null = null;
 
-export const loadOpenCV = () => {
-  if ((window as any).cv && (window as any).cv['ready'])
+export const loadOpenCV = (): Promise<void> => {
+  if (window.cv?.ready) {
     return Promise.resolve();
-  if (cvReadyPromise) return cvReadyPromise;
+  }
+
+  if (cvReadyPromise) {
+    return cvReadyPromise;
+  }
 
   cvReadyPromise = new Promise<void>((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = 'https://docs.opencv.org/4.x/opencv.js';
-    s.async = true;
-    s.onload = () => {
-      (window as any).cv = (window as any).cv || {};
-      (window as any).cv['onRuntimeInitialized'] = () => resolve();
+    const script = document.createElement('script');
+    script.src = 'https://docs.opencv.org/4.x/opencv.js';
+    script.async = true;
+    script.onload = () => {
+      const cvInstance = window.cv;
+      if (!cvInstance) {
+        reject(new Error('OpenCV.js global instance is unavailable'));
+        return;
+      }
+
+      if (cvInstance.ready) {
+        resolve();
+        return;
+      }
+
+      cvInstance.onRuntimeInitialized = () => {
+        cvInstance.ready = true;
+        resolve();
+      };
     };
-    s.onerror = () => reject(new Error('OpenCV.js load failed'));
-    document.body.appendChild(s);
+    script.onerror = () => reject(new Error('OpenCV.js load failed'));
+    document.body.appendChild(script);
   });
 
   return cvReadyPromise;
 };
 
-export const warpImagePerspective = async (opts: {
+interface WarpImagePerspectiveOptions {
   imgEl: HTMLImageElement;
   srcSize: { w: number; h: number };
   dstStagePoints: Point[];
   stageTL: Point;
-  stageScale: number;
   stageSize: TransformBounds;
-}): Promise<string> => {
+}
+
+export const warpImagePerspective = async (
+  opts: WarpImagePerspectiveOptions,
+): Promise<string> => {
   await loadOpenCV();
-  const cv = (window as any).cv as any;
+
+  const cvInstance = window.cv;
+  if (!cvInstance) {
+    throw new Error('OpenCV failed to initialise');
+  }
 
   const { imgEl, srcSize, dstStagePoints, stageTL, stageSize } = opts;
 
-  // Stage -> image-pixel 좌표 변환 (원본 해상도 기준)
-  const toImgPx = (p: Point): Point => {
-    const [sx, sy] = p;
-    const [ox, oy] = stageTL;
-    
-    const stageWidth = stageSize.width;
-    const stageHeight = stageSize.height;
-    
-    const relativeX = (sx - ox) / stageWidth;
-    const relativeY = (sy - oy) / stageHeight;
-    
+  const toImgPx = (point: Point): Point => {
+    const [sx, sy] = point;
+    const [originX, originY] = stageTL;
+
+    const relativeX = (sx - originX) / stageSize.width;
+    const relativeY = (sy - originY) / stageSize.height;
+
     return [
       relativeX * srcSize.w,
-      relativeY * srcSize.h
+      relativeY * srcSize.h,
     ];
   };
 
-  const dstImgPts = dstStagePoints.map(toImgPx) as Point[];
-  const src = cv.imread(imgEl);
+  const dstImgPoints = dstStagePoints.map(toImgPx) as Point[];
+  const srcMat = cvInstance.imread(imgEl);
 
-  const srcTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
+  const srcTriangle = cvInstance.matFromArray(4, 1, cvInstance.CV_32FC2, [
     0, 0,
     srcSize.w, 0,
     srcSize.w, srcSize.h,
     0, srcSize.h,
   ]);
 
-  // 출력 캔버스 크기 - 원본 크기 기준으로 충분히 크게 설정
-  const xs = dstImgPts.map((p) => p[0]);
-  const ys = dstImgPts.map((p) => p[1]);
+  const xs = dstImgPoints.map((point) => point[0]);
+  const ys = dstImgPoints.map((point) => point[1]);
   const minX = Math.min(...xs);
   const maxX = Math.max(...xs);
   const minY = Math.min(...ys);
   const maxY = Math.max(...ys);
-  
+
   const padding = Math.max(srcSize.w, srcSize.h) * 0.2;
-  const outW = Math.max(srcSize.w, Math.ceil(maxX - minX + padding * 2));
-  const outH = Math.max(srcSize.h, Math.ceil(maxY - minY + padding * 2));
-  
-  const adjustedDstPts = dstImgPts.map(([x, y]) => [
+  const outWidth = Math.max(srcSize.w, Math.ceil(maxX - minX + padding * 2));
+  const outHeight = Math.max(srcSize.h, Math.ceil(maxY - minY + padding * 2));
+
+  const adjustedDstPoints = dstImgPoints.map(([x, y]) => [
     x - minX + padding,
-    y - minY + padding
-  ]);
-  
-  const dstTri = cv.matFromArray(4, 1, cv.CV_32FC2, [
-    adjustedDstPts[0][0], adjustedDstPts[0][1],
-    adjustedDstPts[1][0], adjustedDstPts[1][1], 
-    adjustedDstPts[2][0], adjustedDstPts[2][1],
-    adjustedDstPts[3][0], adjustedDstPts[3][1],
+    y - minY + padding,
   ]);
 
-  const M = cv.getPerspectiveTransform(srcTri, dstTri);
-  const dst = new cv.Mat();
-  
-  cv.warpPerspective(
-    src,
-    dst,
-    M,
-    new cv.Size(outW, outH),
-    cv.INTER_LINEAR,
-    cv.BORDER_CONSTANT,
-    new cv.Scalar(0, 0, 0, 0)
+  const dstTriangle = cvInstance.matFromArray(4, 1, cvInstance.CV_32FC2, [
+    adjustedDstPoints[0][0], adjustedDstPoints[0][1],
+    adjustedDstPoints[1][0], adjustedDstPoints[1][1],
+    adjustedDstPoints[2][0], adjustedDstPoints[2][1],
+    adjustedDstPoints[3][0], adjustedDstPoints[3][1],
+  ]);
+
+  const perspectiveMatrix = cvInstance.getPerspectiveTransform(srcTriangle, dstTriangle);
+  const dstMat = new cvInstance.Mat();
+
+  cvInstance.warpPerspective(
+    srcMat,
+    dstMat,
+    perspectiveMatrix,
+    new cvInstance.Size(outWidth, outHeight),
+    cvInstance.INTER_LINEAR,
+    cvInstance.BORDER_CONSTANT,
+    new cvInstance.Scalar(0, 0, 0, 0),
   );
 
   const canvas = document.createElement('canvas');
-  canvas.width = outW;
-  canvas.height = outH;
-  cv.imshow(canvas, dst);
+  canvas.width = outWidth;
+  canvas.height = outHeight;
+  cvInstance.imshow(canvas, dstMat);
 
-  // 메모리 정리
-  [src, dst, srcTri, dstTri, M].forEach(mat => mat.delete());
+  [srcMat, dstMat, srcTriangle, dstTriangle, perspectiveMatrix].forEach((mat) => mat.delete());
 
   return canvas.toDataURL('image/png');
 };
+
+export {};

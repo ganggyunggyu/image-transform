@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useAtom, useAtomValue } from 'jotai';
-import type { TransformMode, Point } from '@/shared/types';
+import type { Point } from '@/shared/types';
 import {
   transformModeAtom,
   transformBoundsAtom,

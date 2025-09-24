@@ -1,7 +1,5 @@
 import React from 'react';
 import { useAtomValue, useSetAtom } from 'jotai';
-import { Box, Typography, Chip, List, ListItem, ListItemText, ListItemIcon, Avatar } from '@mui/material';
-import { Image as ImageIcon, CheckCircle as CheckCircleIcon } from '@mui/icons-material';
 import { formatFileSize } from '@/shared/utils';
 import { cn } from '@/shared/lib';
 import {
@@ -16,84 +14,67 @@ export const ImageList: React.FC = () => {
   const selectImage = useSetAtom(selectImageAtom);
 
   return (
-    <Box className={cn('flex flex-col h-full')}>
-      <Box className={cn('flex items-center justify-between mb-4')}>
-        <Typography variant="subtitle2" className={cn('font-bold text-gray-800')}>
-          파일 목록
-        </Typography>
-        <Chip 
-          label={`${imageFiles.length}개`} 
-          size="small" 
-          className={cn('bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 font-semibold')}
-        />
-      </Box>
-      
-      <Box className={cn('flex-1 overflow-y-auto min-h-0')}>
-        {imageFiles.length === 0 ? (
-          <Box className={cn('flex flex-col items-center justify-center py-12 text-center')}>
-            <ImageIcon sx={{ fontSize: 48, color: '#9ca3af', mb: 2 }} />
-            <Typography variant="body2" className={cn('text-gray-500 font-medium')}>
-              파일이 없습니다
-            </Typography>
-          </Box>
-        ) : (
-          <List className={cn('p-0')}>
-            {imageFiles.map((img) => (
-              <ListItem
-                key={img.id}
-                onClick={() => selectImage(img)}
-                className={cn(
-                  'group mb-2 rounded-2xl cursor-pointer transition-all duration-300 ease-in-out',
-                  selectedImage?.id === img.id
-                    ? 'bg-gradient-to-r from-blue-50 to-indigo-50 shadow-md border-2 border-blue-200'
-                    : 'bg-white hover:bg-gradient-to-r hover:from-gray-50 hover:to-slate-50 hover:shadow-md border-2 border-transparent hover:border-gray-200'
-                )}
-                sx={{
-                  borderRadius: '16px',
-                  '&:hover': {
-                    transform: 'translateY(-1px)'
-                  }
-                }}
-              >
-                <ListItemIcon className={cn('min-w-0 mr-3')}>
-                  <Avatar 
-                    className={cn('w-10 h-10')}
-                    sx={{
-                      background: selectedImage?.id === img.id 
-                        ? 'linear-gradient(45deg, #3b82f6, #8b5cf6)' 
-                        : 'linear-gradient(45deg, #10b981, #059669)',
-                      width: 40,
-                      height: 40
-                    }}
-                  >
-                    {selectedImage?.id === img.id ? (
-                      <CheckCircleIcon sx={{ color: 'white', fontSize: 20 }} />
-                    ) : (
-                      <ImageIcon sx={{ color: 'white', fontSize: 20 }} />
-                    )}
-                  </Avatar>
-                </ListItemIcon>
-                <ListItemText
-                  primary={
-                    <Typography 
-                      variant="body2" 
-                      className={cn('font-semibold text-gray-900 truncate')}
-                      sx={{ fontSize: '0.875rem' }}
-                    >
-                      {img.name}
-                    </Typography>
-                  }
-                  secondary={
-                    <Typography variant="caption" className={cn('text-gray-500 font-medium')}>
-                      {formatFileSize(img.size)}
-                    </Typography>
-                  }
-                />
-              </ListItem>
-            ))}
-          </List>
-        )}
-      </Box>
-    </Box>
+    <div className={cn('flex flex-col gap-3')}>
+      {imageFiles.map((img, index) => (
+        <button
+          type="button"
+          key={img.id}
+          onClick={() => selectImage(img)}
+          className={cn(
+            'group relative text-left',
+            'w-full rounded-xl border',
+            'px-4 py-3 flex items-center gap-3',
+            'transition-colors duration-200',
+            selectedImage?.id === img.id
+              ? 'border-slate-900 bg-slate-900 text-white'
+              : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+          )}
+          style={{ animationDelay: `${index * 50}ms` }}
+        >
+          <div className={cn(
+            'relative w-12 h-12 rounded-lg overflow-hidden',
+            'border border-slate-200 bg-slate-100'
+          )}>
+            <img
+              src={img.preview}
+              alt={img.name}
+              className={cn('w-full h-full object-cover')}
+            />
+          </div>
+
+          <div className={cn('flex-1 min-w-0')}> 
+            <h4 className={cn(
+              'text-sm font-semibold truncate',
+              selectedImage?.id === img.id ? 'text-white' : 'text-slate-900'
+            )}>
+              {img.name}
+            </h4>
+            <p className={cn(
+              'text-xs',
+              selectedImage?.id === img.id ? 'text-slate-200' : 'text-slate-400'
+            )}>
+              {formatFileSize(img.size)}
+            </p>
+          </div>
+
+          <div className={cn(
+            'w-6 h-6 rounded-full flex items-center justify-center',
+            selectedImage?.id === img.id
+              ? 'bg-white text-slate-900'
+              : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200 group-hover:text-slate-600'
+          )}>
+            {selectedImage?.id === img.id ? (
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 20 20" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l3 3 7-7" />
+              </svg>
+            ) : (
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 20 20" stroke="currentColor">
+                <circle cx="10" cy="10" r="7" strokeWidth={1.5} />
+              </svg>
+            )}
+          </div>
+        </button>
+      ))}
+    </div>
   );
 };

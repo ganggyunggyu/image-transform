@@ -12,7 +12,6 @@ import {
   stageSizeAtom,
   canvasScaleAtom,
   transformBoundsAtom,
-  transformModeAtom,
 } from '@/shared/stores/atoms';
 import { PerspectiveTransformImage } from './PerspectiveTransformImage';
 import { TransformControlPoints } from './TransformControlPoints';
@@ -24,16 +23,25 @@ export const TransformWorkspace: React.FC = () => {
   const [stageSize, setStageSize] = useAtom(stageSizeAtom);
   const canvasScale = useAtomValue(canvasScaleAtom);
   const transformBounds = useAtomValue(transformBoundsAtom);
-  const transformMode = useAtomValue(transformModeAtom);
 
   const {
     getTransformedPoints,
-    getEdgePoints,
-    setCornerPoint,
-    handleEdgeDrag,
   } = useTransform();
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const stageRef = React.useRef<KonvaStage | null>(null);
+
+  // Mobile detection
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   React.useEffect(() => {
     const element = containerRef.current;
@@ -47,23 +55,31 @@ export const TransformWorkspace: React.FC = () => {
         return;
       }
       const { width, height } = entry.contentRect;
+      // Mobile optimized padding
+      const padding = isMobile ? 12 : 24;
+      const minWidth = isMobile ? 280 : 320;
+      const minHeight = isMobile ? 200 : 240;
+
       const nextSize: StageSize = {
-        width: Math.max(Math.floor(width) - 24, 320),
-        height: Math.max(Math.floor(height) - 24, 240),
+        width: Math.max(Math.floor(width) - padding, minWidth),
+        height: Math.max(Math.floor(height) - padding, minHeight),
       };
       setStageSize(nextSize);
     });
 
     observer.observe(element);
     return () => observer.disconnect();
-  }, [setStageSize]);
+  }, [setStageSize, isMobile]);
 
   if (!selectedImage) {
     return (
-      <div className={cn('flex-1 min-h-[320px] flex items-center justify-center bg-gradient-to-br from-slate-50 to-white rounded-2xl border border-dashed border-slate-200')}>
-        <div className={cn('text-center space-y-2')}>
-          <p className={cn('text-lg font-semibold text-slate-700')}>이미지를 선택해주세요</p>
-          <p className={cn('text-sm text-slate-500')}>왼쪽 패널에서 이미지를 업로드하고 선택하면 변형을 시작할 수 있어요.</p>
+      <div className={cn(
+        'flex-1 min-h-[320px] rounded-3xl border border-dashed border-slate-200',
+        'flex items-center justify-center bg-white text-center px-6'
+      )}>
+        <div className={cn('space-y-2 text-slate-500')}>
+          <p className={cn('text-base font-semibold text-slate-700')}>이미지를 선택해주세요</p>
+          <p className={cn('text-sm leading-relaxed')}>왼쪽 패널에서 이미지를 업로드한 뒤 선택하면 변형을 시작할 수 있어요.</p>
         </div>
       </div>
     );
@@ -72,7 +88,7 @@ export const TransformWorkspace: React.FC = () => {
   return (
     <div
       ref={containerRef}
-      className={cn('flex-1 border-2 border-slate-200 rounded-2xl bg-white overflow-hidden relative')}
+      className={cn('w-full h-full relative overflow-hidden rounded-3xl border border-slate-200 bg-white')}
     >
       <Stage
         ref={stageRef}
@@ -80,7 +96,8 @@ export const TransformWorkspace: React.FC = () => {
         height={stageSize.height}
         scaleX={canvasScale}
         scaleY={canvasScale}
-        draggable
+        draggable={!isMobile}
+        preventDefault={isMobile}
       >
         <Layer>
           <Rect
@@ -124,11 +141,11 @@ export const TransformWorkspace: React.FC = () => {
             return (
               <Line
                 points={linePoints}
-                stroke="rgba(59, 130, 246, 0.9)"
+                stroke="rgba(15, 23, 42, 0.75)"
                 strokeWidth={2}
                 dash={[8, 4]}
                 closed
-                fill="rgba(59, 130, 246, 0.08)"
+                fill="rgba(15, 23, 42, 0.05)"
               />
             );
           })()}

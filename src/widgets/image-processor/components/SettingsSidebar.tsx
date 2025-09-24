@@ -1,22 +1,5 @@
 import React from 'react';
-import {
-  Typography,
-  Button,
-  IconButton,
-  Slider,
-  Switch,
-  FormControlLabel,
-  Stack,
-} from '@mui/material';
-import {
-  KeyboardArrowUp as ArrowUpIcon,
-  KeyboardArrowDown as ArrowDownIcon,
-  KeyboardArrowLeft as ArrowLeftIcon,
-  KeyboardArrowRight as ArrowRightIcon,
-  RestartAlt as RestartIcon,
-} from '@mui/icons-material';
 import { useAtom, useAtomValue } from 'jotai';
-import type { TransformMode } from '@/shared/types';
 import { cn } from '@/shared/lib';
 import { useTransform } from '@/features/free-transform';
 import {
@@ -52,152 +35,198 @@ export const SettingsSidebar: React.FC = () => {
     setFlipHorizontal(false);
     setFlipVertical(false);
   }, [setRotation, setFlipHorizontal, setFlipVertical]);
+
   return (
-    <aside className={cn('w-80 min-w-80 bg-white border-l border-gray-200 flex flex-col shadow-sm overflow-hidden')}>
-      <div className={cn('p-5 border-b bg-slate-50')}>
-        <Typography variant="h6" className={cn('font-bold text-gray-800')}>
-          {activeTab === 0 ? '자유 변형 설정' : '회전 설정'}
-        </Typography>
+    <aside className={cn('flex h-full w-full flex-col border-l border-slate-200/80 bg-white')}> 
+      <div className={cn('flex items-center justify-between border-b border-slate-200/80 px-6 py-5')}>
+        <div className={cn('flex items-center gap-3')}> 
+          <div className={cn(
+            'flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-600'
+          )}>
+            {activeTab === 0 ? 'Free' : 'Rotate'}
+          </div>
+          <div className={cn('space-y-1')}> 
+            <h3 className={cn('text-sm font-semibold text-slate-900')}>
+              {activeTab === 0 ? '자유 변형 설정' : '회전 설정'}
+            </h3>
+            <p className={cn('text-xs text-slate-400')}>세밀한 컨트롤을 여기서 조정하세요.</p>
+          </div>
+        </div>
       </div>
 
-      <div className={cn('flex-1 p-5 overflow-y-auto space-y-5')}>
+      <div className={cn('flex-1 space-y-5 overflow-y-auto px-6 py-5')}> 
         {activeTab === 0 ? (
           <React.Fragment>
-            <PresetTransformButtons onApplyPreset={applyPresetTransform} />
+            <section className={cn('space-y-3')}> 
+              <h4 className={cn('text-xs font-semibold uppercase tracking-[0.2em] text-slate-400')}>Presets</h4>
+              <div className={cn('rounded-2xl border border-slate-200 bg-slate-50/60 p-4')}> 
+                <PresetTransformButtons onApplyPreset={applyPresetTransform} />
+              </div>
+            </section>
 
-            <TransformModeSelector transformMode={transformMode} onModeChange={setTransformMode} />
+            <section className={cn('space-y-3')}> 
+              <h4 className={cn('text-xs font-semibold uppercase tracking-[0.2em] text-slate-400')}>Mode</h4>
+              <div className={cn('rounded-2xl border border-slate-200 bg-white p-4')}> 
+                <TransformModeSelector transformMode={transformMode} onModeChange={setTransformMode} />
+              </div>
+            </section>
 
-            <div className={cn('space-y-3')}>
-              <Typography variant="subtitle2" className={cn('font-semibold text-gray-700')}>
-                전체 이동
-              </Typography>
-              <Stack direction="row" spacing={2} justifyContent="space-between">
-                <Stack spacing={1} alignItems="center">
-                  <Typography variant="caption" className={cn('text-gray-500')}>상하</Typography>
-                  <div className={cn('flex gap-1')}>
-                    <IconButton size="small" onClick={() => adjustVertical('up', 2)}>
-                      <ArrowUpIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton size="small" onClick={() => adjustVertical('down', 2)}>
-                      <ArrowDownIcon fontSize="small" />
-                    </IconButton>
+            <section className={cn('space-y-3')}> 
+              <h4 className={cn('text-xs font-semibold uppercase tracking-[0.2em] text-slate-400')}>Adjust</h4>
+              <div className={cn('rounded-2xl border border-slate-200 bg-white p-5 space-y-4')}> 
+                <div className={cn('grid grid-cols-2 gap-3 text-xs font-semibold text-slate-500')}> 
+                  <div className={cn('space-y-2 text-center')}> 
+                    <p>상하 이동</p>
+                    <div className={cn('flex items-center justify-center gap-2')}>
+                      <button
+                        onClick={() => adjustVertical('up', 2)}
+                        className={cn('h-10 w-10 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900')}
+                      >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 15l7-7 7 7" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => adjustVertical('down', 2)}
+                        className={cn('h-10 w-10 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900')}
+                      >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
-                </Stack>
-                <Stack spacing={1} alignItems="center">
-                  <Typography variant="caption" className={cn('text-gray-500')}>좌우</Typography>
-                  <div className={cn('flex gap-1')}>
-                    <IconButton size="small" onClick={() => adjustHorizontal('left', 2)}>
-                      <ArrowLeftIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton size="small" onClick={() => adjustHorizontal('right', 2)}>
-                      <ArrowRightIcon fontSize="small" />
-                    </IconButton>
+                  <div className={cn('space-y-2 text-center')}> 
+                    <p>좌우 이동</p>
+                    <div className={cn('flex items-center justify-center gap-2')}>
+                      <button
+                        onClick={() => adjustHorizontal('left', 2)}
+                        className={cn('h-10 w-10 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900')}
+                      >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => adjustHorizontal('right', 2)}
+                        className={cn('h-10 w-10 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900')}
+                      >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
-                </Stack>
-              </Stack>
-            </div>
+                </div>
 
-            <CornerAdjustmentControls
-              cornerPoints={cornerPoints}
-              transformMode={transformMode}
-              onAdjustCorner={adjustCornerPrecise}
-            />
+                <CornerAdjustmentControls
+                  cornerPoints={cornerPoints}
+                  transformMode={transformMode}
+                  onAdjustCorner={adjustCornerPrecise}
+                />
 
-            <Button
-              onClick={resetAllAdjustments}
-              variant="outlined"
-              size="large"
-              startIcon={<RestartIcon />}
-              className={cn('w-full rounded-xl')}
-            >
-              모서리 초기화
-            </Button>
-
-            <div className={cn('text-xs text-gray-500 p-3 bg-slate-50 rounded-lg leading-relaxed space-y-1')}>
-              <p><strong>사용법</strong></p>
-              <p>• 색상 원을 드래그하여 모서리를 조정</p>
-              <p>• 사각형 핸들을 드래그하여 변(edge)을 조절</p>
-              <p>• 상하/좌우 버튼으로 1px 단위 이동</p>
-              <p>
-                • 현재 모드:{' '}
-                {transformMode === 'free' && '자유 변형'}
-                {transformMode === 'perspective' && '원근 변형'}
-                {transformMode === 'distort' && '비틀기 변형'}
-                {transformMode === 'skew' && '기울이기'}
-              </p>
-            </div>
+                <button
+                  onClick={resetAllAdjustments}
+                  className={cn(
+                    'inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 hover:border-slate-900 hover:text-slate-900'
+                  )}
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  모서리 초기화
+                </button>
+              </div>
+            </section>
           </React.Fragment>
         ) : (
           <React.Fragment>
-            <div>
-              <Typography variant="subtitle2" className={cn('font-semibold text-gray-700 mb-2')}>
-                회전 각도 ({rotation}°)
-              </Typography>
-              <Slider
-                value={rotation}
-                onChange={(_, value) => {
-                  if (typeof value === 'number') {
-                    setRotation(value);
-                  }
-                }}
-                min={-180}
-                max={180}
-                step={1}
-                marks={[
-                  { value: -180, label: '-180°' },
-                  { value: 0, label: '0°' },
-                  { value: 180, label: '180°' },
-                ]}
-              />
-              <div className={cn('flex gap-2 mt-2 flex-wrap')}>
-                {[0, 90, 180, -90].map((angle) => (
-                  <Button
-                    key={angle}
-                    variant={rotation === angle ? 'contained' : 'outlined'}
-                    onClick={() => setRotation(angle)}
-                    size="small"
-                    className={cn('rounded-lg min-w-[72px]')}
-                  >
-                    {angle}°
-                  </Button>
-                ))}
+            <section className={cn('space-y-3')}> 
+              <h4 className={cn('text-xs font-semibold uppercase tracking-[0.2em] text-slate-400')}>Rotation</h4>
+              <div className={cn('rounded-2xl border border-slate-200 bg-white p-5 space-y-4')}> 
+                <div className={cn('text-center text-2xl font-bold text-slate-900')}>
+                  {rotation}°
+                </div>
+                <input
+                  type="range"
+                  value={rotation}
+                  onChange={(e) => setRotation(Number(e.target.value))}
+                  min="-180"
+                  max="180"
+                  step="1"
+                  className={cn('w-full accent-slate-900')}
+                />
+                <div className={cn('flex justify-between text-[11px] text-slate-400')}>
+                  <span>-180°</span>
+                  <span>0°</span>
+                  <span>180°</span>
+                </div>
+                <div className={cn('grid grid-cols-4 gap-2 pt-3')}>
+                  {[0, 90, 180, -90].map((angle) => (
+                    <button
+                      key={angle}
+                      onClick={() => setRotation(angle)}
+                      className={cn(
+                        'rounded-xl border px-3 py-2 text-xs font-semibold transition-colors',
+                        rotation === angle
+                          ? 'border-slate-900 bg-slate-900 text-white'
+                          : 'border-slate-200 bg-white text-slate-600 hover:border-slate-900 hover:text-slate-900'
+                      )}
+                    >
+                      {angle}°
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            </section>
 
-            <div className={cn('space-y-2')}>
-              <Typography variant="subtitle2" className={cn('font-semibold text-gray-700')}>
-                반전 설정
-              </Typography>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={flipHorizontal}
-                    onChange={(event) => setFlipHorizontal(event.target.checked)}
-                    size="small"
-                  />
-                }
-                label="좌우 반전"
-              />
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={flipVertical}
-                    onChange={(event) => setFlipVertical(event.target.checked)}
-                    size="small"
-                  />
-                }
-                label="상하 반전"
-              />
-            </div>
+            <section className={cn('space-y-3')}> 
+              <h4 className={cn('text-xs font-semibold uppercase tracking-[0.2em] text-slate-400')}>Flip</h4>
+              <div className={cn('space-y-3')}> 
+                <button
+                  onClick={() => setFlipHorizontal(!flipHorizontal)}
+                  className={cn(
+                    'flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-semibold transition-colors',
+                    flipHorizontal
+                      ? 'border-slate-900 bg-slate-900 text-white'
+                      : 'border-slate-200 bg-white text-slate-600 hover:border-slate-900 hover:text-slate-900'
+                  )}
+                >
+                  <span>좌우 반전</span>
+                  <span className={cn('text-xs font-medium')}>{flipHorizontal ? 'ON' : 'OFF'}</span>
+                </button>
 
-            <Button
-              onClick={handleResetRotation}
-              variant="outlined"
-              startIcon={<RestartIcon />}
-              className={cn('w-full rounded-xl')}
-            >
-              회전 설정 초기화
-            </Button>
+                <button
+                  onClick={() => setFlipVertical(!flipVertical)}
+                  className={cn(
+                    'flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-semibold transition-colors',
+                    flipVertical
+                      ? 'border-slate-900 bg-slate-900 text-white'
+                      : 'border-slate-200 bg-white text-slate-600 hover:border-slate-900 hover:text-slate-900'
+                  )}
+                >
+                  <span>상하 반전</span>
+                  <span className={cn('text-xs font-medium')}>{flipVertical ? 'ON' : 'OFF'}</span>
+                </button>
+              </div>
+            </section>
+
+            <section className={cn('space-y-3')}> 
+              <h4 className={cn('text-xs font-semibold uppercase tracking-[0.2em] text-slate-400')}>Reset</h4>
+              <button
+                onClick={handleResetRotation}
+                className={cn(
+                  'inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 hover:border-slate-900 hover:text-slate-900'
+                )}
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                회전 초기화
+              </button>
+            </section>
           </React.Fragment>
         )}
       </div>

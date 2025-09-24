@@ -1,59 +1,115 @@
-# image-transform AGENT
+# Image Transform Studio – Project AGENT
 
-## Stack Signals
-- React 19 + TypeScript + Vite 7 entry via `src/main.tsx`
-- Styling blends Tailwind CSS 4 utility tokens (`@tailwindcss/vite`) with MUI 7 components; `src/shared/lib/cn.ts` (clsx + tailwind-merge) already enforces class composition
-- State providers bootstrapped in `src/App.tsx`: TanStack Query 5 `QueryClientProvider`, Jotai atom root, React Router v7 shell
-- Image workflow anchored on Konva/react-konva, Fabric, html2canvas, JSZip, and custom perspective math under `src/shared/utils`
-- Absolute imports resolved through `@/*` path mapping defined in `tsconfig.app.json` and consumed throughout widgets/features
+_Last reviewed: 2025-03-07_
 
-## Source Topology
+## 1. Product Snapshot
+- **Purpose**: Browser-based workstation for perspective/rotation transforms on uploaded images with instant preview and zipped exports.
+- **Audience**: Designers/creatives needing quick skew/warp adjustments without desktop tools.
+- **Current Focus**: Completing modern FSD refactor, polishing responsive workspace, wiring download paths for every mode.
+
+## 2. Tech Stack Checklist
+- **Runtime**: React 19 + TypeScript 5.8, Vite 7 (ESM only).
+- **Styling**: Tailwind CSS v4 via `@tailwindcss/vite`, all `className` go through `cn()` (`src/shared/lib/cn.ts`).
+- **Routing**: React Router DOM v7 (BrowserRouter), two routes (`/`, `/image-transform`).
+- **State**: Jotai atoms under `src/shared/stores/atoms.ts` (no Redux). Keep atom side-effects pure and revoke previews on cleanup.
+- **Server Comms**: Axios configured ad-hoc when needed. TanStack Query v5 already bootstrapped in `App.tsx`; default options set, but no queries yet.
+- **Canvas**: React-Konva + Konva core. `use-image` handles HTMLImage loading.
+- **Utilities**: OpenCV.js loaded from CDN (`src/shared/utils/_opencv.ts`), html2canvas & JSZip ready for exports, Fabric.js reserved (unused atm).
+
+## 3. Build & QA Commands
+```bash
+npm run dev          # Vite dev server (port 6001)
+npm run build        # Type-check + production build
+npm run preview      # Serve build output
+npm run lint         # ESLint w/ typescript-eslint config
+```
+_Add tests as Vitest/Playwright if coverage work starts; none exist yet._
+
+## 4. FSD Layout (enforced with `@` alias)
 ```
 src/
-├── app/                      # (vacant) reserve for providers/config
-├── assets/                   # static images
-├── features/
-│   ├── free-transform/       # hooks + logic for corner/edge manipulation
-│   └── image-upload/         # drag & drop uploader + list UI
-├── pages/
-│   ├── home/                 # landing hero + CTA cards
-│   └── image-processor/      # wraps ImageProcessor widget for routing
-├── shared/
-│   ├── lib/                  # cn helper, reaction utilities
-│   ├── stores/               # jotai atoms (selection, modal state)
-│   ├── types/                # ImageFile, transform typings
-│   └── utils/                # download helpers, math, fabric, konva bridges
-├── widgets/
-│   └── image-processor/      # Konva canvas, presets, controls
-├── App.tsx                   # provider shell + top nav
-└── main.tsx                  # StrictMode root
+├── app/            # global providers, config placeholders (currently empty)
+├── pages/          # route-level containers (HomePage, ImageProcessorPage)
+├── widgets/        # cross-page blocks; `image-processor/` owns desktop/mobile shell
+├── features/       # functional slices (free-transform, image-upload)
+├── shared/         # lib, utils, stores, types
+├── assets/         # static assets
 ```
-- `app/` and `entities/` folders remain empty placeholders; populate when config or domain models mature, keeping FSD import direction intact (`pages` consumes `widgets/features/entities/shared` only)
+- Never climb directories with `../../` — always import via `@/`.
+- Widgets may reach into features/entities/shared only; keep business logic inside features.
 
-## Front-End Guardrails
-- Keep every `className` routed through `cn(...)`; favor Tailwind tokens over inline styles, pair with MUI `sx` only when unavoidable
-- Maintain React.Fragment verbosity (`<React.Fragment>`)—no shorthand fragments per project mandate
-- Centralize async ops with TanStack Query; expose mutations/queries as domain hooks under `features/*/hooks`
-- Persist shared state through Jotai atoms inside `src/shared/stores`, but surface domain-aware selectors inside `features`
-- Prefer icon libraries (MUI Icons, react-icons) rather than emoji for affordances to meet publishing rules
-- Avoid spinning up Vite dev server unless the request is explicit
+## 5. Core User Flows
+- **Upload** (`features/image-upload`)
+  - `ImageUploader` handles drop/click, filters `image/*`, emits `ImageFile` records with `URL.createObjectURL` previews.
+  - `ImageList` displays selectable thumbnails, updates `selectedImageAtom`.
+  - Remember to call `clearAllImagesAtom` to revoke URLs before unmount to avoid leaks.
 
-## Build & QA Commands
-```bash
-npm run dev       # Vite dev server (keep stopped by default)
-npm run build     # Type-check + production bundle
-npm run lint      # ESLint flat config
-npm run preview   # Preview production build
+- **Transform Workspace** (`widgets/image-processor/components`)
+  - `TransformWorkspace` sets Konva stage bounds via `ResizeObserver` (syncs `stageSizeAtom`).
+  - `useTransform` (features/free-transform) stores corner/edge positions, offers helpers for presets, edge drags, perspective export (`generatePerspectiveImage`).
+  - `PerspectiveTransformImage` invokes `warpImagePerspective` after OpenCV initialisation and clips the transformed bitmap back onto the stage.
+  - Desktop shell shows `FileSidebar` + `Workspace` + `SettingsSidebar`; mobile shell collapses into tabbed panels and floating CTA.
+
+- **Download**
+  - `downloadWithFolder` / `downloadMultipleWithFolder` wrap JSZip output. Ensure MIME/quality pulled from `_format.ts` before saving in future enhancements.
+  - Rotation tab currently surfaces TODO (“준비 중”). Implement pending business logic before claiming parity.
+
+## 6. Global State Map
+| Atom | Purpose | Notes |
+|------|---------|-------|
+| `imageFilesAtom` | Uploaded file list | Use `clearAllImagesAtom` to revoke previews |
+| `selectedImageAtom` | Active image metadata | Resets rotation/flip on change |
+| `imageElementAtom` | Loaded HTMLImage for Konva/OpenCV | Set via `use-image` hook in desktop workspace |
+| `cornerPointsAtom` | `[Point, ...]` for warp polygon | Keep coordinates within `stageSize` bounds |
+| `transformBoundsAtom` | Bounding box around original texture | Updated on `resetTransform` |
+| `activeTabAtom` | `0`=Transform, `1`=Rotation | Mobile & desktop share |
+| `rotationAtom`, `flipHorizontalAtom`, `flipVerticalAtom` | Rotation controls | UI present, export pending |
+| `showAlertAtom` + `alertSeverityAtom` | Toast messaging | Use `showAlertMessageAtom` helper |
+
+## 7. Styling Rules of Engagement
+- Only Tailwind classes merged through `cn(...)` — never raw template strings.
+- React fragments must be the long form `<React.Fragment>` per project convention.
+- Keep interactions “modern SaaS”: gradients, glassmorphism touches, but avoid emoji per publishing guide.
+- Remove legacy `App.css` scaffolding when redesign stabilises; `#root` styles conflict with fixed header layout.
+
+## 8. External Integrations
+- **OpenCV.js**: Lazy-loaded script (`https://docs.opencv.org/4.x/opencv.js`). Check `window.cv?.ready` before triggering warp. When adding features, respect single-flight `cvReadyPromise`.
+- **JSZip**: Running in browser; convert base64 payloads using `base64ToBlob` helper before zipping.
+- **Fabric.js**: Declared dependency but unused. Confirm need before shipping to reduce bundle size.
+
+## 9. Outstanding Work / Risks
+- Rotation tab download flow stubbed — finish image matrix math before release.
+- Mobile workspace: drag gestures rely on Konva defaults; test multi-touch to avoid ghost moves.
+- OpenCV CDN dependency has no offline fallback; consider bundling WASM or retry logic.
+- Memory pressure risk when batching large images; monitor `URL.createObjectURL` usage and add cleanup on atom reset.
+
+## 10. Contribution Playbook
+1. Create feature slice under `src/features/<feature-name>` with `model/`, `lib/`, `api/`, `ui/`, `hooks/` subdivisions when it grows.
+2. Use Jotai atoms for shared state; derive computed values via getter atoms instead of React state duplication.
+3. Wrap network calls with TanStack Query for caching/invalidation (see `App.tsx` provider).
+4. Keep per-device logic inside widgets (desktop/mobile components) instead of scattering media queries across feature layers.
+5. Respect no-comment policy unless explaining non-obvious math/transforms.
+
+## 11. Quick Reference Snippets
+```tsx
+// Accessing transform presets inside a widget
+actionButton.onClick(() => {
+  applyPresetTransform('expand');
+  showAlertMessage('프리셋을 적용했어요', 'info');
+});
 ```
-- Adopt Vitest/React Testing Library under `tests/` when regression coverage becomes critical
 
-## Immediate Backlog Radar
-1. Extract provider wiring (Router, QueryClient, Jotai) into `src/app/providers` for reuse/testing
-2. Continue refining `widgets/image-processor` composition for performance (memoization, suspense states)
-3. Add persisted storage/replay for transform presets using Jotai atoms + TanStack Query infinite queries when backend endpoints arrive
-4. Harden download pipeline with progress UI (JSZip) and failure notifications via MUI `Alert`
+```ts
+// Loading OpenCV before warp
+await loadOpenCV();
+const result = await warpImagePerspective({
+  imgEl,
+  srcSize: { w: imgEl.naturalWidth, h: imgEl.naturalHeight },
+  dstStagePoints,
+  stageTL: [bounds.x, bounds.y],
+  stageSize: bounds,
+});
+```
 
-## Python Track Placeholder
-- No backend present; when introducing FastAPI/Django/Flask, obey the supplied Python FSD directory contract under `src/` (`app/`, `entities/`, `features/`, `shared/`, `services/`, etc.)
-- Enforce absolute imports (`from src.entities.user import User`), Pydantic models for every DTO, and exhaustive typing (`from __future__ import annotations`)
-- Register global exception handlers, logging setup, and dependency injection modules mirroring the shared blueprint to keep parity with the front-end structure
+---
+For anything unclear, audit `src/widgets/image-processor` first; it orchestrates nearly every flow.

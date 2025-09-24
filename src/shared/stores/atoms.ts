@@ -11,7 +11,6 @@ import type {
 // 이미지 관련 상태
 export const imageFilesAtom = atom<ImageFile[]>([]);
 export const selectedImageAtom = atom<ImageFile | null>(null);
-export const isImageLoadedAtom = atom(false);
 export const isProcessingAtom = atom(false);
 export const imageElementAtom = atom<HTMLImageElement | null>(null);
 
@@ -52,6 +51,7 @@ export const currentImageIndexAtom = atom((get) => {
   const selected = get(selectedImageAtom);
   return selected ? images.findIndex(img => img.id === selected.id) : -1;
 });
+export const isImageLoadedAtom = atom((get) => !!get(imageElementAtom));
 
 // 액션 atoms (functions)
 export const clearAllImagesAtom = atom(null, (get, set) => {
@@ -63,7 +63,6 @@ export const clearAllImagesAtom = atom(null, (get, set) => {
   });
   set(imageFilesAtom, []);
   set(selectedImageAtom, null);
-  set(isImageLoadedAtom, false);
   set(imageElementAtom, null);
 });
 
@@ -75,14 +74,12 @@ export const addImageFilesAtom = atom(null, (get, set, newFiles: ImageFile[]) =>
   const selected = get(selectedImageAtom);
   if (!selected && newFiles.length > 0) {
     set(selectedImageAtom, newFiles[0]);
-    set(isImageLoadedAtom, false);
     set(imageElementAtom, null);
   }
 });
 
 export const selectImageAtom = atom(null, (_, set, imageFile: ImageFile | null) => {
   set(selectedImageAtom, imageFile);
-  set(isImageLoadedAtom, false);
   // 변형 상태 초기화
   set(rotationAtom, 0);
   set(flipHorizontalAtom, false);

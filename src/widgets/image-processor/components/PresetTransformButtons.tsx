@@ -1,16 +1,5 @@
 import React from 'react';
-import { Button } from '@mui/material';
-import { 
-  KeyboardArrowLeft as LeftIcon,
-  KeyboardArrowRight as RightIcon,
-  KeyboardArrowUp as UpIcon,
-  KeyboardArrowDown as DownIcon,
-  TrendingUp as TiltLeftIcon,
-  TrendingDown as TiltRightIcon,
-  GraphicEq as WaveIcon,
-  OpenInFull as ExpandIcon,
-  CloseFullscreen as ContractIcon
-} from '@mui/icons-material';
+import { cn } from '@/shared/lib';
 
 interface PresetTransformButtonsProps {
   onApplyPreset: (presetType: string) => void;
@@ -20,100 +9,56 @@ export const PresetTransformButtons: React.FC<PresetTransformButtonsProps> = ({
   onApplyPreset,
 }) => {
   const mainPresets = [
-    { value: 'perspective-left', label: '좌측 원근', icon: LeftIcon, color: '#3b82f6' },
-    { value: 'perspective-right', label: '우측 원근', icon: RightIcon, color: '#10b981' },
-    { value: 'perspective-top', label: '상단 원근', icon: UpIcon, color: '#f59e0b' },
-    { value: 'perspective-bottom', label: '하단 원근', icon: DownIcon, color: '#ef4444' },
+    { value: 'perspective-left', label: '좌측', icon: '←' },
+    { value: 'perspective-right', label: '우측', icon: '→' },
+    { value: 'perspective-top', label: '상단', icon: '↑' },
+    { value: 'perspective-bottom', label: '하단', icon: '↓' },
   ];
 
-  const skewPresets = [
-    { value: 'skew-left', label: '좌 기울기', icon: LeftIcon },
-    { value: 'skew-right', label: '우 기울기', icon: RightIcon },
-    { value: 'wave-horizontal', label: '수평 웨이브', icon: WaveIcon },
-    { value: 'wave-vertical', label: '수직 웨이브', icon: WaveIcon },
-    { value: 'tilt-left', label: '좌측 기울기', icon: TiltLeftIcon },
-    { value: 'tilt-right', label: '우측 기울기', icon: TiltRightIcon },
-  ];
-
-  const scalePresets = [
-    { value: 'expand', label: '확장', icon: ExpandIcon, color: '#8b5cf6' },
-    { value: 'contract', label: '축소', icon: ContractIcon, color: '#06b6d4' },
+  const additionalPresets = [
+    { value: 'skew-left', label: '좌 기울기', icon: '⤡' },
+    { value: 'skew-right', label: '우 기울기', icon: '⤢' },
+    { value: 'tilt-left', label: '좌 틸트', icon: '↙' },
+    { value: 'tilt-right', label: '우 틸트', icon: '↗' },
+    { value: 'expand', label: '확대', icon: '⤢' },
+    { value: 'contract', label: '축소', icon: '⤡' },
   ];
 
   return (
-    <>
-      {/* 메인 원근 프리셋 */}
-      <div className="grid grid-cols-2 gap-2 mb-4">
-        {mainPresets.map(({ value, label, icon: IconComponent, color }) => (
-          <Button
+    <React.Fragment>
+      <div className={cn('grid grid-cols-2 gap-2')}>
+        {mainPresets.map(({ value, label, icon }) => (
+          <button
             key={value}
             onClick={() => onApplyPreset(value)}
-            variant="outlined"
-            size="small"
-            className="py-2 text-xs"
-            sx={{
-              flexDirection: 'column',
-              height: '50px',
-              borderColor: color,
-              color: color,
-              '&:hover': {
-                backgroundColor: `${color}15`,
-                borderColor: color,
-              },
-            }}
+            className={cn(
+              'group relative flex h-12 items-center justify-center gap-2 rounded-xl border px-3',
+              'border-slate-200 bg-white text-slate-600 transition-colors',
+              'hover:border-slate-900 hover:text-slate-900'
+            )}
           >
-            <IconComponent sx={{ fontSize: 16, mb: 0.5 }} />
-            <span className="font-medium text-xs">{label}</span>
-          </Button>
+            <span className={cn('text-lg font-semibold')}>{icon}</span>
+            <span className={cn('text-xs font-semibold tracking-tight')}>{label}</span>
+          </button>
         ))}
       </div>
 
-      {/* 기울기 프리셋 */}
-      <div className="grid grid-cols-3 gap-2 mb-4">
-        {skewPresets.map(({ value, label, icon: IconComponent }) => (
-          <Button
+      <div className={cn('mt-3 grid grid-cols-3 gap-2')}>
+        {additionalPresets.map(({ value, label, icon }) => (
+          <button
             key={value}
             onClick={() => onApplyPreset(value)}
-            variant="outlined"
-            size="small"
-            className="py-2 text-xs"
-            sx={{
-              flexDirection: 'column',
-              height: '45px',
-              fontSize: '10px',
-            }}
+            className={cn(
+              'group flex h-10 flex-col items-center justify-center gap-1 rounded-lg border',
+              'border-slate-200 bg-slate-50 text-[11px] text-slate-500 transition-colors',
+              'hover:border-slate-900 hover:text-slate-900'
+            )}
           >
-            <IconComponent sx={{ fontSize: 14, mb: 0.5 }} />
-            <span className="font-medium">{label}</span>
-          </Button>
+            <span className={cn('text-xs font-semibold')}>{icon}</span>
+            <span className={cn('text-[10px] font-medium tracking-tight uppercase')}>{label}</span>
+          </button>
         ))}
       </div>
-
-      {/* 스케일 프리셋 */}
-      <div className="grid grid-cols-2 gap-2">
-        {scalePresets.map(({ value, label, icon: IconComponent, color }) => (
-          <Button
-            key={value}
-            onClick={() => onApplyPreset(value)}
-            variant="outlined"
-            size="small"
-            className="py-2 text-xs"
-            sx={{
-              flexDirection: 'column',
-              height: '45px',
-              borderColor: color,
-              color: color,
-              '&:hover': {
-                backgroundColor: `${color}15`,
-                borderColor: color,
-              },
-            }}
-          >
-            <IconComponent sx={{ fontSize: 16, mb: 0.5 }} />
-            <span className="font-medium">{label}</span>
-          </Button>
-        ))}
-      </div>
-    </>
+    </React.Fragment>
   );
 };

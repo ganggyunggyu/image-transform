@@ -34,26 +34,26 @@ export const downloadWithFolder = async ({
   let fileName: string;
   switch (transformType) {
     case 'transform':
-      fileName = `${baseName}_transformed.png`;
+      fileName = `${baseName}_transformed.jpg`;
       break;
     case 'rotation':
-      fileName = `${baseName}_rotated.png`;
+      fileName = `${baseName}_rotated.jpg`;
       break;
     case 'batch_transform':
-      fileName = `${baseName}_batch_transformed.png`;
+      fileName = `${baseName}_batch_transformed.jpg`;
       break;
     case 'batch_rotation':
-      fileName = `${baseName}_batch_rotated.png`;
+      fileName = `${baseName}_batch_rotated.jpg`;
       break;
     default:
-      fileName = `${baseName}_processed.png`;
+      fileName = `${baseName}_processed.jpg`;
   }
 
   try {
     const zip = new JSZip();
 
     const base64Data = dataURL.split(',')[1];
-    const imageBlob = base64ToBlob(base64Data, 'image/png');
+    const imageBlob = base64ToBlob(base64Data, 'image/jpeg');
 
     zip.file(`${folderName}/${fileName}`, imageBlob);
 
@@ -123,10 +123,10 @@ export const downloadMultipleWithFolder = async (
 
     for (const download of downloads) {
       const baseName = download.originalFileName.split('.')[0];
-      const fileName = `${baseName}.png`;
+      const fileName = `${baseName}.jpg`;
 
       const base64Data = download.dataURL.split(',')[1];
-      const imageBlob = base64ToBlob(base64Data, 'image/png');
+      const imageBlob = base64ToBlob(base64Data, 'image/jpeg');
 
       zip.file(`${folderName}/${fileName}`, imageBlob);
     }
@@ -161,7 +161,7 @@ ${downloads.map((d) => `- ${d.originalFileName}`).join('\n')}
         const baseName = download.originalFileName.split('.')[0];
         fallbackDownload(
           download.dataURL,
-          `${baseName}_${transformType}_${index + 1}.png`
+          `${baseName}_${transformType}_${index + 1}.jpg`
         );
       }, index * 100);
     });

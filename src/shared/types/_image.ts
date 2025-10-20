@@ -24,3 +24,20 @@ export type TransformMode = 'free' | 'perspective' | 'distort' | 'skew';
 export type RotationMode = 'single' | 'multiple' | 'full';
 export type BackgroundColor = 'transparent' | 'white' | 'black';
 export type AlertSeverity = 'success' | 'error' | 'info' | 'warning';
+
+export type FrameShape = 'none' | 'rectangle' | 'circle' | 'rounded' | 'polaroid';
+
+export interface FrameOptions {
+  shape: FrameShape;
+  padding: number;
+  borderWidth: number;
+  borderColor: string;
+  borderOpacity: number;
+  cornerRadius: number;
+  shadowEnabled: boolean;
+  shadowBlur: number;
+  shadowColor: string;
+  shadowOpacity: number;
+  shadowOffsetX: number;
+  shadowOffsetY: number;
+}

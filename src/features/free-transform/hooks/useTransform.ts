@@ -17,16 +17,21 @@ export const useTransform = () => {
 
   const resetTransform = useCallback((image?: HTMLImageElement) => {
     if (image && image.width && image.height) {
+      const imgWidth = image.naturalWidth || image.width;
+      const imgHeight = image.naturalHeight || image.height;
+
       const centerX = stageSize.width / 2;
       const centerY = stageSize.height / 2;
-      
-      const maxW = stageSize.width * 0.4;
-      const maxH = stageSize.height * 0.4;
-      
-      const ratio = image.width / image.height;
-      let w = maxW, h = maxH;
-      if (ratio > 1) h = maxW / ratio;
-      else w = maxH * ratio;
+
+      const maxW = stageSize.width * 0.8;
+      const maxH = stageSize.height * 0.8;
+
+      const scaleX = maxW / imgWidth;
+      const scaleY = maxH / imgHeight;
+      const scale = Math.min(scaleX, scaleY, 1);
+
+      const w = imgWidth * scale;
+      const h = imgHeight * scale;
 
       const newBounds = {
         x: centerX - w / 2,
@@ -36,16 +41,15 @@ export const useTransform = () => {
       };
 
       setTransformBounds(newBounds);
-      
-      // 초기 모서리 포인트 설정
+
       setCornerPoints([
-        [newBounds.x, newBounds.y],                           // topLeft
-        [newBounds.x + newBounds.width, newBounds.y],         // topRight
-        [newBounds.x + newBounds.width, newBounds.y + newBounds.height], // bottomRight
-        [newBounds.x, newBounds.y + newBounds.height],        // bottomLeft
+        [newBounds.x, newBounds.y],
+        [newBounds.x + newBounds.width, newBounds.y],
+        [newBounds.x + newBounds.width, newBounds.y + newBounds.height],
+        [newBounds.x, newBounds.y + newBounds.height],
       ]);
     }
-  }, [stageSize]);
+  }, [stageSize, setTransformBounds, setCornerPoints]);
 
   const getTransformedPoints = useCallback(() => {
     return cornerPoints.map(([x, y]) => ({ x, y }));
@@ -465,7 +469,6 @@ export const useTransform = () => {
         srcSize: { w: imageElement.naturalWidth, h: imageElement.naturalHeight },
         dstStagePoints,
         stageTL: [0, 0],
-        stageScale: 1,
         stageSize: { x: 0, y: 0, width: stageSize.width, height: stageSize.height }
       });
       

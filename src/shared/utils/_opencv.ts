@@ -10,8 +10,15 @@ interface OpenCVMat {
 interface OpenCV {
   ready?: boolean;
   onRuntimeInitialized?: () => void;
-  imread: (element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement) => OpenCVMat;
-  matFromArray: (rows: number, cols: number, type: number, data: number[]) => OpenCVMat;
+  imread: (
+    element: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement
+  ) => OpenCVMat;
+  matFromArray: (
+    rows: number,
+    cols: number,
+    type: number,
+    data: number[]
+  ) => OpenCVMat;
   getPerspectiveTransform: (src: OpenCVMat, dst: OpenCVMat) => OpenCVMat;
   Mat: new () => OpenCVMat;
   Size: new (width: number, height: number) => OpenCVSize;
@@ -85,7 +92,7 @@ interface WarpImagePerspectiveOptions {
 }
 
 export const warpImagePerspective = async (
-  opts: WarpImagePerspectiveOptions,
+  opts: WarpImagePerspectiveOptions
 ): Promise<string> => {
   await loadOpenCV();
 
@@ -103,20 +110,21 @@ export const warpImagePerspective = async (
     const relativeX = (sx - originX) / stageSize.width;
     const relativeY = (sy - originY) / stageSize.height;
 
-    return [
-      relativeX * srcSize.w,
-      relativeY * srcSize.h,
-    ];
+    return [relativeX * srcSize.w, relativeY * srcSize.h];
   };
 
   const dstImgPoints = dstStagePoints.map(toImgPx) as Point[];
   const srcMat = cvInstance.imread(imgEl);
 
   const srcTriangle = cvInstance.matFromArray(4, 1, cvInstance.CV_32FC2, [
-    0, 0,
-    srcSize.w, 0,
-    srcSize.w, srcSize.h,
-    0, srcSize.h,
+    0,
+    0,
+    srcSize.w,
+    0,
+    srcSize.w,
+    srcSize.h,
+    0,
+    srcSize.h,
   ]);
 
   // 원본 이미지와 동일한 크기 유지
@@ -127,13 +135,20 @@ export const warpImagePerspective = async (
   const adjustedDstPoints = dstImgPoints;
 
   const dstTriangle = cvInstance.matFromArray(4, 1, cvInstance.CV_32FC2, [
-    adjustedDstPoints[0][0], adjustedDstPoints[0][1],
-    adjustedDstPoints[1][0], adjustedDstPoints[1][1],
-    adjustedDstPoints[2][0], adjustedDstPoints[2][1],
-    adjustedDstPoints[3][0], adjustedDstPoints[3][1],
+    adjustedDstPoints[0][0],
+    adjustedDstPoints[0][1],
+    adjustedDstPoints[1][0],
+    adjustedDstPoints[1][1],
+    adjustedDstPoints[2][0],
+    adjustedDstPoints[2][1],
+    adjustedDstPoints[3][0],
+    adjustedDstPoints[3][1],
   ]);
 
-  const perspectiveMatrix = cvInstance.getPerspectiveTransform(srcTriangle, dstTriangle);
+  const perspectiveMatrix = cvInstance.getPerspectiveTransform(
+    srcTriangle,
+    dstTriangle
+  );
   const dstMat = new cvInstance.Mat();
 
   cvInstance.warpPerspective(
@@ -143,42 +158,27 @@ export const warpImagePerspective = async (
     new cvInstance.Size(outWidth, outHeight),
     cvInstance.INTER_LINEAR,
     cvInstance.BORDER_CONSTANT,
-    new cvInstance.Scalar(0, 0, 0, 0), // 투명 배경
+    new cvInstance.Scalar(255, 255, 255, 255)
   );
 
   const canvas = document.createElement('canvas');
   canvas.width = outWidth;
   canvas.height = outHeight;
 
-  // Canvas 컨텍스트로 직접 처리하여 투명 배경 보장
   const ctx = canvas.getContext('2d');
   if (ctx) {
-    // 캔버스를 완전히 투명하게 초기화
-    ctx.clearRect(0, 0, outWidth, outHeight);
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, outWidth, outHeight);
   }
 
   cvInstance.imshow(canvas, dstMat);
 
-  // 검은색 픽셀을 투명하게 변환 (필요한 경우)
-  if (ctx) {
-    const imageData = ctx.getImageData(0, 0, outWidth, outHeight);
-    const data = imageData.data;
+  [srcMat, dstMat, srcTriangle, dstTriangle, perspectiveMatrix].forEach((mat) =>
+    mat.delete()
+  );
 
-    for (let i = 0; i < data.length; i += 4) {
-      // 완전히 검은색인 픽셀(R=0, G=0, B=0)을 투명하게 설정
-      if (data[i] === 0 && data[i + 1] === 0 && data[i + 2] === 0) {
-        data[i + 3] = 0; // 알파 채널을 0으로 설정
-      }
-    }
-
-    ctx.putImageData(imageData, 0, 0);
-  }
-
-  [srcMat, dstMat, srcTriangle, dstTriangle, perspectiveMatrix].forEach((mat) => mat.delete());
-
-  // PNG로 강제 설정하여 투명도 지원
-  const mimeType = 'image/png';
-  const quality = 1.0;
+  const mimeType = 'image/jpeg';
+  const quality = 0.92;
 
   return canvas.toDataURL(mimeType, quality);
 };

@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/shared/lib';
-import { Button, Card } from '@/shared/ui';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -165,7 +164,7 @@ export const HomePage: React.FC = () => {
         )}>
           <div className={cn('max-w-7xl mx-auto')}>
             <div className={cn('grid grid-cols-1 md:grid-cols-3 gap-8')}>
-              {featureList.map((feature, index) => (
+              {featureList.map((feature) => (
                 <div
                   key={feature.title}
                   onClick={() => navigate('/image-transform')}

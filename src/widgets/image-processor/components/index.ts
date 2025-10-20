@@ -7,3 +7,4 @@ export { TransformControlPoints } from './TransformControlPoints';
 export { PresetTransformButtons } from './PresetTransformButtons';
 export { TransformModeSelector } from './TransformModeSelector';
 export { CornerAdjustmentControls } from './CornerAdjustmentControls';
+export { FrameSelector } from './FrameSelector';

@@ -6,6 +6,7 @@ import type {
   TransformMode,
   TransformBounds,
   Point,
+  FrameOptions,
 } from '../types';
 
 // 이미지 관련 상태
@@ -15,21 +16,17 @@ export const isProcessingAtom = atom(false);
 export const imageElementAtom = atom<HTMLImageElement | null>(null);
 
 // UI 상태
-export const activeTabAtom = atom(0);
 export const showAlertAtom = atom('');
 export const alertSeverityAtom = atom<AlertSeverity>('info');
 
 // 캔버스 상태
-export const canvasScaleAtom = atom(1.0);
+export const canvasScaleAtom = atom(0.5);
 export const stageSizeAtom = atom<StageSize>({
   width: 800,
   height: 600,
 });
 
 // 변형 상태
-export const rotationAtom = atom(0);
-export const flipHorizontalAtom = atom(false);
-export const flipVerticalAtom = atom(false);
 export const transformModeAtom = atom<TransformMode>('free');
 export const transformBoundsAtom = atom<TransformBounds>({
   x: 150,
@@ -43,6 +40,21 @@ export const cornerPointsAtom = atom<Point[]>([
   [0, 0],
   [0, 0],
 ]);
+
+export const frameOptionsAtom = atom<FrameOptions>({
+  shape: 'none',
+  padding: 48,
+  borderWidth: 24,
+  borderColor: '#ffffff',
+  borderOpacity: 1,
+  cornerRadius: 24,
+  shadowEnabled: false,
+  shadowBlur: 24,
+  shadowColor: '#0f172a',
+  shadowOpacity: 0.18,
+  shadowOffsetX: 0,
+  shadowOffsetY: 18,
+});
 
 // 파생 상태 (computed atoms)
 export const hasImagesAtom = atom((get) => get(imageFilesAtom).length > 0);
@@ -80,10 +92,6 @@ export const addImageFilesAtom = atom(null, (get, set, newFiles: ImageFile[]) =>
 
 export const selectImageAtom = atom(null, (_, set, imageFile: ImageFile | null) => {
   set(selectedImageAtom, imageFile);
-  // 변형 상태 초기화
-  set(rotationAtom, 0);
-  set(flipHorizontalAtom, false);
-  set(flipVerticalAtom, false);
   set(imageElementAtom, null);
 });
 

@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Image as KonvaImage } from 'react-konva';
 import { useAtomValue } from 'jotai';
-import { warpImagePerspective } from '@/shared/utils';
+import { warpImagePerspective, applyFrameToImage } from '@/shared/utils';
 import { useTransform } from '@/features/free-transform';
 import {
   imageElementAtom,
   transformBoundsAtom,
   stageSizeAtom,
+  frameOptionsAtom,
 } from '@/shared/stores/atoms';
 import type { Point } from '@/shared/types';
 
@@ -14,6 +15,7 @@ export const PerspectiveTransformImage: React.FC = () => {
   const image = useAtomValue(imageElementAtom);
   const transformBounds = useAtomValue(transformBoundsAtom);
   const stageSize = useAtomValue(stageSizeAtom);
+  const frameOptions = useAtomValue(frameOptionsAtom);
   const { getTransformedPoints } = useTransform();
 
   const [transformedImageSrc, setTransformedImageSrc] = useState<string | null>(null);
@@ -29,13 +31,19 @@ export const PerspectiveTransformImage: React.FC = () => {
           [points[3].x, points[3].y], // 좌하
         ];
 
-        const dataUrl = await warpImagePerspective({
+        if (!image) return;
+
+        let dataUrl = await warpImagePerspective({
           imgEl: image,
           srcSize: { w: image.naturalWidth, h: image.naturalHeight },
           dstStagePoints,
           stageTL: [transformBounds.x, transformBounds.y],
           stageSize: transformBounds,
         });
+
+        if (frameOptions.shape !== 'none') {
+          dataUrl = await applyFrameToImage(dataUrl, frameOptions);
+        }
 
         setTransformedImageSrc(dataUrl);
       } catch (error) {
@@ -46,7 +54,7 @@ export const PerspectiveTransformImage: React.FC = () => {
     if (image) {
       applyPerspectiveTransform();
     }
-  }, [image, getTransformedPoints, transformBounds]);
+  }, [image, getTransformedPoints, transformBounds, frameOptions]);
 
   const transformedImage = useMemo(() => {
     if (!transformedImageSrc) {

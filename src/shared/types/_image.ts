@@ -20,6 +20,7 @@ export interface StageSize {
   height: number;
 }
 
+export type TabMode = 'transform' | 'split';
 export type TransformMode = 'free' | 'perspective' | 'distort' | 'skew';
 export type RotationMode = 'single' | 'multiple' | 'full';
 export type BackgroundColor = 'transparent' | 'white' | 'black';
@@ -40,4 +41,11 @@ export interface FrameOptions {
   shadowOpacity: number;
   shadowOffsetX: number;
   shadowOffsetY: number;
+}
+
+export type SplitDirection = 'horizontal' | 'vertical';
+
+export interface SplitOptions {
+  direction: SplitDirection;
+  count: number;
 }

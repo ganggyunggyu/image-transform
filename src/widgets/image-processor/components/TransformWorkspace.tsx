@@ -14,7 +14,6 @@ import {
   transformBoundsAtom,
 } from '@/shared/stores/atoms';
 import { PerspectiveTransformImage } from './PerspectiveTransformImage';
-import { TransformControlPoints } from './TransformControlPoints';
 
 export const TransformWorkspace: React.FC = () => {
   const selectedImage = useAtomValue(selectedImageAtom);
@@ -141,18 +140,15 @@ export const TransformWorkspace: React.FC = () => {
             return (
               <Line
                 points={linePoints}
-                stroke="rgba(15, 23, 42, 0.75)"
-                strokeWidth={2}
-                dash={[8, 4]}
+                stroke="rgba(15, 23, 42, 0.4)"
+                strokeWidth={1}
                 closed
-                fill="rgba(15, 23, 42, 0.05)"
+                fill="rgba(15, 23, 42, 0.02)"
               />
             );
           })()}
 
           {imageElement && isImageLoaded && <PerspectiveTransformImage />}
-
-          <TransformControlPoints />
         </Layer>
       </Stage>
     </div>

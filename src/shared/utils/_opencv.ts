@@ -158,18 +158,12 @@ export const warpImagePerspective = async (
     new cvInstance.Size(outWidth, outHeight),
     cvInstance.INTER_LINEAR,
     cvInstance.BORDER_CONSTANT,
-    new cvInstance.Scalar(255, 255, 255, 255)
+    new cvInstance.Scalar(0, 0, 0, 0)
   );
 
   const canvas = document.createElement('canvas');
   canvas.width = outWidth;
   canvas.height = outHeight;
-
-  const ctx = canvas.getContext('2d');
-  if (ctx) {
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, outWidth, outHeight);
-  }
 
   cvInstance.imshow(canvas, dstMat);
 
@@ -177,10 +171,9 @@ export const warpImagePerspective = async (
     mat.delete()
   );
 
-  const mimeType = 'image/jpeg';
-  const quality = 0.92;
+  const mimeType = 'image/png';
 
-  return canvas.toDataURL(mimeType, quality);
+  return canvas.toDataURL(mimeType);
 };
 
 export {};

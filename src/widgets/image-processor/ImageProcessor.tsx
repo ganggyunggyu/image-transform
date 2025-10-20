@@ -75,7 +75,7 @@ const DesktopImageProcessor: React.FC = () => {
         'grid-cols-1 lg:grid-cols-[200px_1fr_272px]',
         'min-h-[640px] rounded-3xl border border-slate-200 bg-white shadow-sm'
       )}>
-        <aside className={cn('h-full border-r border-slate-200/80 bg-white hidden lg:flex')}>
+        <aside className={cn('h-full border-r border-slate-200/80 bg-white flex')}>
           <FileSidebar />
         </aside>
 

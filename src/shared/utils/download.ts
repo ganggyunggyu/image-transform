@@ -11,6 +11,52 @@ export interface DownloadOptions {
   timestamp?: boolean;
 }
 
+const FILE_SUFFIX: Record<DownloadOptions['transformType'], string> = {
+  transform: '_transformed',
+  rotation: '_rotated',
+  batch_transform: '_batch_transformed',
+  batch_rotation: '_batch_rotated',
+};
+
+const convertPngToJpeg = async (pngDataUrl: string, quality = 0.92): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        reject(new Error('Canvas context not available'));
+        return;
+      }
+
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => reject(new Error('Failed to load image'));
+    img.src = pngDataUrl;
+  });
+};
+
+const extractDataUrlMeta = (dataURL: string) => {
+  const [header = '', payload = ''] = dataURL.split(',');
+  const match = header.match(/^data:(image\/[a-zA-Z0-9+\.\-]+);base64$/i);
+  const mimeType = match?.[1] ?? 'image/png';
+  const rawExtension = mimeType.split('/')[1]?.toLowerCase() ?? 'png';
+  const extension = rawExtension === 'jpeg' ? 'jpg' : rawExtension;
+
+  return {
+    mimeType,
+    extension,
+    base64Data: payload,
+  };
+};
+
 export const downloadWithFolder = async ({
   dataURL,
   originalFileName,
@@ -31,29 +77,19 @@ export const downloadWithFolder = async ({
 
   const folderName = `${baseName}_${transformType}${timeStr}`;
 
-  let fileName: string;
-  switch (transformType) {
-    case 'transform':
-      fileName = `${baseName}_transformed.jpg`;
-      break;
-    case 'rotation':
-      fileName = `${baseName}_rotated.jpg`;
-      break;
-    case 'batch_transform':
-      fileName = `${baseName}_batch_transformed.jpg`;
-      break;
-    case 'batch_rotation':
-      fileName = `${baseName}_batch_rotated.jpg`;
-      break;
-    default:
-      fileName = `${baseName}_processed.jpg`;
+  let processedDataUrl = dataURL;
+  if (dataURL.startsWith('data:image/png')) {
+    processedDataUrl = await convertPngToJpeg(dataURL, 0.92);
   }
+
+  const { mimeType, extension, base64Data } = extractDataUrlMeta(processedDataUrl);
+  const suffix = FILE_SUFFIX[transformType] ?? '_processed';
+  const fileName = `${baseName}${suffix}.${extension}`;
 
   try {
     const zip = new JSZip();
 
-    const base64Data = dataURL.split(',')[1];
-    const imageBlob = base64ToBlob(base64Data, 'image/jpeg');
+    const imageBlob = base64ToBlob(base64Data, mimeType);
 
     zip.file(`${folderName}/${fileName}`, imageBlob);
 
@@ -123,10 +159,16 @@ export const downloadMultipleWithFolder = async (
 
     for (const download of downloads) {
       const baseName = download.originalFileName.split('.')[0];
-      const fileName = `${baseName}.jpg`;
 
-      const base64Data = download.dataURL.split(',')[1];
-      const imageBlob = base64ToBlob(base64Data, 'image/jpeg');
+      let processedDataUrl = download.dataURL;
+      if (download.dataURL.startsWith('data:image/png')) {
+        processedDataUrl = await convertPngToJpeg(download.dataURL, 0.92);
+      }
+
+      const { mimeType, extension, base64Data } = extractDataUrlMeta(processedDataUrl);
+      const fileName = `${baseName}.${extension}`;
+
+      const imageBlob = base64ToBlob(base64Data, mimeType);
 
       zip.file(`${folderName}/${fileName}`, imageBlob);
     }
@@ -159,9 +201,10 @@ ${downloads.map((d) => `- ${d.originalFileName}`).join('\n')}
     downloads.forEach((download, index) => {
       setTimeout(() => {
         const baseName = download.originalFileName.split('.')[0];
+        const { extension } = extractDataUrlMeta(download.dataURL);
         fallbackDownload(
           download.dataURL,
-          `${baseName}_${transformType}_${index + 1}.jpg`
+          `${baseName}_${transformType}_${index + 1}.${extension}`
         );
       }, index * 100);
     });

@@ -17,6 +17,8 @@ export const SettingsSidebar: React.FC = () => {
   const [transformMode, setTransformMode] = useAtom(transformModeAtom);
   const cornerPoints = useAtomValue(cornerPointsAtom);
   const [frameOptions, setFrameOptions] = useAtom(frameOptionsAtom);
+  const [moveAmount, setMoveAmount] = React.useState(10);
+
   const handleFrameOptionChange = React.useCallback((patch: Partial<FrameOptions>) => {
     setFrameOptions((prev) => ({ ...prev, ...patch }));
   }, [setFrameOptions]);
@@ -230,47 +232,66 @@ export const SettingsSidebar: React.FC = () => {
         <section className={cn('space-y-3')}>
           <h4 className={cn('text-xs font-semibold uppercase tracking-[0.2em] text-slate-400')}>Adjust</h4>
           <div className={cn('rounded-2xl border border-slate-200 bg-white p-5 space-y-4')}>
-            <div className={cn('grid grid-cols-2 gap-3 text-xs font-semibold text-slate-500')}>
-              <div className={cn('space-y-2 text-center')}>
-                <p>상하 이동</p>
-                <div className={cn('flex items-center justify-center gap-2')}>
-                  <button
-                    onClick={() => adjustVertical('up', 2)}
-                    className={cn('h-10 w-10 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900')}
-                  >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 15l7-7 7 7" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => adjustVertical('down', 2)}
-                    className={cn('h-10 w-10 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900')}
-                  >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                </div>
+            <div className={cn('space-y-3')}>
+              <div className={cn('flex items-center gap-2')}>
+                <label className={cn('text-xs font-semibold text-slate-600 w-16')}>이동량</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="500"
+                  value={moveAmount}
+                  onChange={(e) => setMoveAmount(Number(e.target.value))}
+                  className={cn(
+                    'flex-1 px-3 py-2 rounded-lg border border-slate-200',
+                    'text-xs font-medium text-slate-900',
+                    'focus:outline-none focus:border-slate-900'
+                  )}
+                />
+                <span className={cn('text-xs text-slate-400')}>px</span>
               </div>
-              <div className={cn('space-y-2 text-center')}>
-                <p>좌우 이동</p>
-                <div className={cn('flex items-center justify-center gap-2')}>
-                  <button
-                    onClick={() => adjustHorizontal('left', 2)}
-                    className={cn('h-10 w-10 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900')}
-                  >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => adjustHorizontal('right', 2)}
-                    className={cn('h-10 w-10 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900')}
-                  >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
+
+              <div className={cn('grid grid-cols-2 gap-3 text-xs font-semibold text-slate-500')}>
+                <div className={cn('space-y-2 text-center')}>
+                  <p>상하 이동</p>
+                  <div className={cn('flex items-center justify-center gap-2')}>
+                    <button
+                      onClick={() => adjustVertical('up', moveAmount)}
+                      className={cn('h-10 w-10 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900')}
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 15l7-7 7 7" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => adjustVertical('down', moveAmount)}
+                      className={cn('h-10 w-10 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900')}
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                <div className={cn('space-y-2 text-center')}>
+                  <p>좌우 이동</p>
+                  <div className={cn('flex items-center justify-center gap-2')}>
+                    <button
+                      onClick={() => adjustHorizontal('left', moveAmount)}
+                      className={cn('h-10 w-10 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900')}
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => adjustHorizontal('right', moveAmount)}
+                      className={cn('h-10 w-10 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900')}
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

@@ -12,7 +12,10 @@ import {
   transformBoundsAtom,
   frameOptionsAtom,
 } from '@/shared/stores/atoms';
-import { downloadMultipleWithFolder, downloadWithFolder } from '@/shared/utils/download';
+import {
+  downloadMultipleWithFolder,
+  downloadWithFolder,
+} from '@/shared/utils/download';
 import { warpImagePerspective, applyFrameToImage } from '@/shared/utils';
 import { useTransform } from '@/features/free-transform';
 import { TransformWorkspace } from './TransformWorkspace';
@@ -102,7 +105,8 @@ const useImageProcessorActions = () => {
 
         await new Promise<void>((resolve, reject) => {
           img.onload = () => resolve();
-          img.onerror = () => reject(new Error('이미지를 불러오지 못했습니다.'));
+          img.onerror = () =>
+            reject(new Error('이미지를 불러오지 못했습니다.'));
         });
 
         const width = img.naturalWidth || img.width;
@@ -131,7 +135,10 @@ const useImageProcessorActions = () => {
       }
 
       await downloadMultipleWithFolder(results, 'batch_transform');
-      showAlertMessage(`${imageFiles.length}개의 이미지를 일괄 다운로드했습니다.`, 'success');
+      showAlertMessage(
+        `${imageFiles.length}개의 이미지를 일괄 다운로드했습니다.`,
+        'success'
+      );
     } catch (error) {
       console.error(error);
       showAlertMessage('일괄 변형 중 오류가 발생했습니다.', 'error');
@@ -161,73 +168,126 @@ export const DesktopWorkspace: React.FC = () => {
   const { resetTransform } = useTransform();
   const imageElement = useAtomValue(imageElementAtom);
   const { processTransform, processBatch } = useImageProcessorActions();
-  const handleZoomIn = () => setCanvasScale((scale) => Math.min(scale * 1.2, 3));
-  const handleZoomOut = () => setCanvasScale((scale) => Math.max(scale / 1.2, 0.2));
+  const handleZoomIn = () =>
+    setCanvasScale((scale) => Math.min(scale * 1.2, 3));
+  const handleZoomOut = () =>
+    setCanvasScale((scale) => Math.max(scale / 1.2, 0.2));
   const handleResetTransform = () => {
     if (imageElement) {
       resetTransform(imageElement);
     }
   };
 
-  const selectedLabel = selectedImage ? `현재 파일 • ${selectedImage.name}` : '왼쪽 파일 패널에서 이미지를 선택하세요.';
-
   return (
     <section className={cn('flex h-full flex-col gap-6 bg-white p-6')}>
-      <header className={cn('flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between')}>
+      <header
+        className={cn(
+          'flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between'
+        )}
+      >
         <div className={cn('space-y-3')}>
-          <div className={cn('inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-slate-500')}>
+          <div
+            className={cn(
+              'inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-slate-500'
+            )}
+          >
             Studio Mode
-          </div>
-          <div className={cn('space-y-2')}>
-            <h2 className={cn('text-2xl font-semibold text-slate-900 sm:text-3xl')}>자유 변형</h2>
-            <p className={cn('text-sm text-slate-500')}>모서리와 변을 정밀하게 조정해 원근을 맞춰보세요.</p>
-            <p className={cn('text-xs font-medium uppercase tracking-[0.25em] text-slate-400')}>{selectedLabel}</p>
           </div>
         </div>
 
-        <div className={cn('flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-500 shadow-sm')}>
+        <div
+          className={cn(
+            'flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-500 shadow-sm'
+          )}
+        >
           <span className={cn('hidden sm:block')}>배율</span>
-          <span className={cn('rounded-full border border-slate-200 px-3 py-0.5 text-xs font-semibold text-slate-700')}>
+          <span
+            className={cn(
+              'rounded-full border border-slate-200 px-3 py-0.5 text-xs font-semibold text-slate-700'
+            )}
+          >
             {Math.round(canvasScale * 100)}%
           </span>
           <button
             onClick={handleZoomOut}
-            className={cn('flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-all duration-200 hover:-translate-y-0.5 hover:text-slate-900')}
+            className={cn(
+              'flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-all duration-200 hover:-translate-y-0.5 hover:text-slate-900'
+            )}
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 12H4" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M20 12H4"
+              />
             </svg>
           </button>
           <button
             onClick={handleResetTransform}
-            className={cn('hidden sm:inline-flex h-8 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 transition-all duration-200 hover:-translate-y-0.5 hover:text-slate-900')}
+            className={cn(
+              'hidden sm:inline-flex h-8 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 transition-all duration-200 hover:-translate-y-0.5 hover:text-slate-900'
+            )}
           >
             초기화
           </button>
           <button
             onClick={handleZoomIn}
-            className={cn('flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-all duration-200 hover:-translate-y-0.5 hover:text-slate-900')}
+            className={cn(
+              'flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-all duration-200 hover:-translate-y-0.5 hover:text-slate-900'
+            )}
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M12 4v16m8-8H4"
+              />
             </svg>
           </button>
         </div>
       </header>
 
       <div className={cn('flex flex-1 flex-col gap-4')}>
-        <div className={cn('relative min-h-[480px] flex-1 rounded-3xl border border-slate-200 bg-slate-50/70 p-2 sm:p-4 lg:p-6')}>
-          <div className={cn('h-full rounded-2xl border border-slate-200 bg-white shadow-inner')}>
+        <div
+          className={cn(
+            'relative min-h-[480px] flex-1 rounded-3xl border border-slate-200 bg-slate-50/70 p-2 sm:p-4 lg:p-6'
+          )}
+        >
+          <div
+            className={cn(
+              'h-full rounded-2xl border border-slate-200 bg-white shadow-inner'
+            )}
+          >
             <TransformWorkspace />
           </div>
 
           {isProcessing && (
-            <div className={cn(
-              'absolute inset-0 z-10 flex items-center justify-center rounded-3xl bg-white/70 backdrop-blur-sm'
-            )}>
+            <div
+              className={cn(
+                'absolute inset-0 z-10 flex items-center justify-center rounded-3xl bg-white/70 backdrop-blur-sm'
+              )}
+            >
               <div className={cn('flex flex-col items-center gap-4')}>
-                <div className={cn('h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-slate-900')} />
-                <p className={cn('text-sm font-semibold text-slate-600')}>처리 중...</p>
+                <div
+                  className={cn(
+                    'h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-slate-900'
+                  )}
+                />
+                <p className={cn('text-sm font-semibold text-slate-600')}>
+                  처리 중...
+                </p>
               </div>
             </div>
           )}
@@ -244,9 +304,18 @@ export const DesktopWorkspace: React.FC = () => {
                 : 'bg-slate-900 text-white hover:-translate-y-0.5 hover:bg-slate-800'
             )}
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+              />
             </svg>
             변형 적용
           </button>
@@ -261,9 +330,18 @@ export const DesktopWorkspace: React.FC = () => {
                 : 'border-slate-300 text-slate-600 hover:-translate-y-0.5 hover:border-slate-900 hover:text-slate-900'
             )}
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+              />
             </svg>
             일괄 처리
           </button>

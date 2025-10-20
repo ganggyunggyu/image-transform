@@ -236,16 +236,20 @@ export const SettingsSidebar: React.FC = () => {
               <div className={cn('flex items-center gap-2')}>
                 <label className={cn('text-xs font-semibold text-slate-600 w-16')}>이동량</label>
                 <input
-                  type="number"
-                  min="1"
-                  max="500"
+                  type="text"
                   value={moveAmount}
-                  onChange={(e) => setMoveAmount(Number(e.target.value))}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    if (!isNaN(val) && val >= 1 && val <= 500) {
+                      setMoveAmount(val);
+                    }
+                  }}
                   className={cn(
                     'flex-1 px-3 py-2 rounded-lg border border-slate-200',
                     'text-xs font-medium text-slate-900',
                     'focus:outline-none focus:border-slate-900'
                   )}
+                  placeholder="10"
                 />
                 <span className={cn('text-xs text-slate-400')}>px</span>
               </div>

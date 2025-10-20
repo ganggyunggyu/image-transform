@@ -31,6 +31,49 @@ const toRgba = (hex: string, alpha: number): string => {
   return `rgba(${r}, ${g}, ${b}, ${clamp(alpha, 0, 1)})`;
 };
 
+const getImageBounds = (img: HTMLImageElement): { x: number; y: number; width: number; height: number } => {
+  const canvas = document.createElement('canvas');
+  canvas.width = img.width;
+  canvas.height = img.height;
+  const ctx = canvas.getContext('2d');
+
+  if (!ctx) {
+    return { x: 0, y: 0, width: img.width, height: img.height };
+  }
+
+  ctx.drawImage(img, 0, 0);
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const { data, width, height } = imageData;
+
+  let minX = width;
+  let minY = height;
+  let maxX = 0;
+  let maxY = 0;
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const alpha = data[(y * width + x) * 4 + 3];
+      if (alpha > 0) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+
+  if (minX > maxX || minY > maxY) {
+    return { x: 0, y: 0, width: img.width, height: img.height };
+  }
+
+  return {
+    x: minX,
+    y: minY,
+    width: maxX - minX + 1,
+    height: maxY - minY + 1,
+  };
+};
+
 const drawRoundedRect = (
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -105,8 +148,11 @@ export const applyFrameToImage = (
       const totalPadding = safePadding + safeBorder;
       const polaroidExtra = shape === 'polaroid' ? safePadding * 2.5 : 0;
 
-      const canvasWidth = Math.ceil(img.width + totalPadding * 2);
-      const canvasHeight = Math.ceil(img.height + totalPadding * 2 + polaroidExtra);
+      // 실제 이미지 컨텐츠 영역 찾기
+      const bounds = getImageBounds(img);
+
+      const canvasWidth = Math.ceil(bounds.width + totalPadding * 2);
+      const canvasHeight = Math.ceil(bounds.height + totalPadding * 2 + polaroidExtra);
 
       const canvas = document.createElement('canvas');
       canvas.width = canvasWidth;
@@ -128,30 +174,37 @@ export const applyFrameToImage = (
         shadowOffsetY,
       };
 
-      const imageX = totalPadding;
-      const imageY = totalPadding;
+      // 이미지를 그릴 위치 (바운딩 박스를 고려)
+      const imageX = totalPadding - bounds.x;
+      const imageY = totalPadding - bounds.y;
 
       switch (shape) {
         case 'rectangle':
         case 'polaroid': {
-          withShadow(ctx, shadowOptions, () => {
-            ctx.fillStyle = frameColor;
-            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-          });
+          if (safeBorder > 0) {
+            withShadow(ctx, shadowOptions, () => {
+              ctx.strokeStyle = frameColor;
+              ctx.lineWidth = safeBorder;
+              ctx.strokeRect(safeBorder / 2, safeBorder / 2, canvasWidth - safeBorder, canvasHeight - safeBorder);
+            });
+          }
 
           ctx.drawImage(img, imageX, imageY, img.width, img.height);
           break;
         }
 
         case 'rounded': {
-          withShadow(ctx, shadowOptions, () => {
-            drawRoundedRect(ctx, 0, 0, canvasWidth, canvasHeight, cornerRadius);
-            ctx.fillStyle = frameColor;
-            ctx.fill();
-          });
+          if (safeBorder > 0) {
+            withShadow(ctx, shadowOptions, () => {
+              drawRoundedRect(ctx, safeBorder / 2, safeBorder / 2, canvasWidth - safeBorder, canvasHeight - safeBorder, cornerRadius);
+              ctx.strokeStyle = frameColor;
+              ctx.lineWidth = safeBorder;
+              ctx.stroke();
+            });
+          }
 
           ctx.save();
-          drawRoundedRect(ctx, 0, 0, canvasWidth, canvasHeight, cornerRadius);
+          drawRoundedRect(ctx, totalPadding, totalPadding, bounds.width, bounds.height, Math.max(0, cornerRadius - safeBorder));
           ctx.clip();
           ctx.drawImage(img, imageX, imageY, img.width, img.height);
           ctx.restore();
@@ -161,50 +214,47 @@ export const applyFrameToImage = (
         case 'circle': {
           const centerX = canvasWidth / 2;
           const centerY = (canvasHeight - polaroidExtra) / 2;
-          const radius = Math.min(img.width, img.height) / 2 + totalPadding;
-
-          withShadow(ctx, shadowOptions, () => {
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-            ctx.closePath();
-            ctx.fillStyle = 'white';
-            ctx.fill();
-          });
+          const radius = Math.min(bounds.width, bounds.height) / 2 + safePadding;
 
           if (safeBorder > 0) {
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-            ctx.closePath();
-            ctx.strokeStyle = frameColor;
-            ctx.lineWidth = safeBorder;
-            ctx.stroke();
+            withShadow(ctx, shadowOptions, () => {
+              ctx.beginPath();
+              ctx.arc(centerX, centerY, radius + safeBorder / 2, 0, Math.PI * 2);
+              ctx.closePath();
+              ctx.strokeStyle = frameColor;
+              ctx.lineWidth = safeBorder;
+              ctx.stroke();
+            });
           }
 
           ctx.save();
           ctx.beginPath();
-          ctx.arc(centerX, centerY, radius - safeBorder / 2, 0, Math.PI * 2);
+          ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
           ctx.closePath();
           ctx.clip();
 
-          const drawX = centerX - img.width / 2;
-          const drawY = centerY - img.height / 2;
+          const drawX = imageX;
+          const drawY = imageY;
           ctx.drawImage(img, drawX, drawY, img.width, img.height);
           ctx.restore();
           break;
         }
 
         default: {
-          withShadow(ctx, shadowOptions, () => {
-            ctx.fillStyle = frameColor;
-            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-          });
+          if (safeBorder > 0) {
+            withShadow(ctx, shadowOptions, () => {
+              ctx.strokeStyle = frameColor;
+              ctx.lineWidth = safeBorder;
+              ctx.strokeRect(safeBorder / 2, safeBorder / 2, canvasWidth - safeBorder, canvasHeight - safeBorder);
+            });
+          }
 
           ctx.drawImage(img, imageX, imageY, img.width, img.height);
           break;
         }
       }
 
-      resolve(canvas.toDataURL('image/png'));
+      resolve(canvas.toDataURL('image/webp', 0.85));
     };
 
     img.onerror = () => reject(new Error('Failed to load image'));

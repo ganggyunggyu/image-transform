@@ -171,9 +171,7 @@ export const warpImagePerspective = async (
     mat.delete()
   );
 
-  const mimeType = 'image/png';
-
-  return canvas.toDataURL(mimeType);
+  return canvas.toDataURL('image/webp', 0.85);
 };
 
 export {};

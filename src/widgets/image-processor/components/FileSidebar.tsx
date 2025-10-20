@@ -1,8 +1,12 @@
 import React from 'react';
 import { cn } from '@/shared/lib';
-import { ImageUploader, ImageList } from '@/features/image-upload';
+import { ImageUploader } from '@/features/image-upload';
 import { useAtomValue, useSetAtom } from 'jotai';
-import { imageFilesAtom, clearAllImagesAtom, showAlertMessageAtom } from '@/shared/stores/atoms';
+import {
+  imageFilesAtom,
+  clearAllImagesAtom,
+  showAlertMessageAtom,
+} from '@/shared/stores/atoms';
 
 export const FileSidebar: React.FC = () => {
   const imageFiles = useAtomValue(imageFilesAtom);
@@ -19,34 +23,6 @@ export const FileSidebar: React.FC = () => {
     >
       <div className={cn('px-3 py-3 border-b border-slate-200/60')}>
         <ImageUploader />
-      </div>
-
-      <div className={cn('flex-1 overflow-y-auto px-3 py-3 bg-white')}>
-        {hasFiles ? (
-          <ImageList />
-        ) : (
-          <div
-            className={cn(
-              'h-full flex flex-col items-center justify-center gap-2',
-              'text-slate-400 text-center'
-            )}
-          >
-            <svg
-              className="w-8 h-8 text-slate-300"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-              />
-            </svg>
-            <p className={cn('text-xs text-slate-400')}>파일 없음</p>
-          </div>
-        )}
       </div>
 
       {hasFiles && (

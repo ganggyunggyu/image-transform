@@ -7,6 +7,8 @@ import type {
   TransformBounds,
   Point,
   FrameOptions,
+  TabMode,
+  SplitOptions,
 } from '../types';
 
 // 이미지 관련 상태
@@ -16,6 +18,7 @@ export const isProcessingAtom = atom(false);
 export const imageElementAtom = atom<HTMLImageElement | null>(null);
 
 // UI 상태
+export const tabModeAtom = atom<TabMode>('transform');
 export const showAlertAtom = atom('');
 export const alertSeverityAtom = atom<AlertSeverity>('info');
 
@@ -54,6 +57,11 @@ export const frameOptionsAtom = atom<FrameOptions>({
   shadowOpacity: 0.18,
   shadowOffsetX: 0,
   shadowOffsetY: 18,
+});
+
+export const splitOptionsAtom = atom<SplitOptions>({
+  direction: 'vertical',
+  count: 6,
 });
 
 // 파생 상태 (computed atoms)

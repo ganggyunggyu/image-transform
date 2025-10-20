@@ -9,11 +9,15 @@ import {
   alertSeverityAtom,
   stageSizeAtom,
   imageElementAtom,
+  tabModeAtom,
 } from '@/shared/stores/atoms';
 import {
   FileSidebar,
   Workspace,
   SettingsSidebar,
+  TabSelector,
+  SplitWorkspace,
+  SplitSettingsSidebar,
 } from './components';
 
 
@@ -23,6 +27,7 @@ const DesktopImageProcessor: React.FC = () => {
   const alertSeverity = useAtomValue(alertSeverityAtom);
   const stageSize = useAtomValue(stageSizeAtom);
   const [imageElement, setImageElement] = useAtom(imageElementAtom);
+  const [tabMode, setTabMode] = useAtom(tabModeAtom);
 
   const [loadedImage] = useImage(selectedImage?.preview ?? '', 'anonymous');
 
@@ -75,16 +80,17 @@ const DesktopImageProcessor: React.FC = () => {
         'grid-cols-1 lg:grid-cols-[200px_1fr_272px]',
         'min-h-[640px] rounded-3xl border border-slate-200 bg-white shadow-sm'
       )}>
-        <aside className={cn('h-full border-r border-slate-200/80 bg-white flex')}>
+        <aside className={cn('h-full border-r border-slate-200/80 bg-white flex flex-col')}>
+          <TabSelector activeTab={tabMode} onTabChange={setTabMode} />
           <FileSidebar />
         </aside>
 
         <div className={cn('flex flex-col bg-slate-50/60 overflow-hidden')}>
-          <Workspace />
+          {tabMode === 'transform' ? <Workspace /> : <SplitWorkspace />}
         </div>
 
         <aside className={cn('h-full border-t lg:border-t-0 lg:border-l border-slate-200/80 bg-white flex')}>
-          <SettingsSidebar />
+          {tabMode === 'transform' ? <SettingsSidebar /> : <SplitSettingsSidebar />}
         </aside>
       </div>
     </React.Fragment>

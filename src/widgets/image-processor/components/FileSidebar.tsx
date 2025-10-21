@@ -41,7 +41,9 @@ export const FileSidebar: React.FC = () => {
             className={cn(
               'w-full px-2 py-1.5 rounded-lg',
               'text-xs font-medium text-slate-600',
-              'transition-colors duration-200 hover:bg-slate-100 hover:text-slate-900'
+              'transition-all duration-200',
+              'hover:bg-slate-100 hover:text-slate-900',
+              'active:scale-95 active:bg-slate-200'
             )}
           >
             모두 삭제

@@ -275,8 +275,10 @@ export const SettingsSidebar: React.FC = () => {
                     <button
                       onClick={() => adjustVertical('up', moveAmount)}
                       className={cn(
-                        'h-10 w-10 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900',
-                        'flex items-center justify-center'
+                        'h-10 w-10 rounded-xl border border-slate-200 bg-white text-slate-600',
+                        'flex items-center justify-center transition-all duration-200',
+                        'hover:border-slate-900 hover:bg-slate-50 hover:text-slate-900 hover:shadow-sm',
+                        'active:scale-90 active:bg-slate-100'
                       )}
                     >
                       <svg
@@ -296,8 +298,10 @@ export const SettingsSidebar: React.FC = () => {
                     <button
                       onClick={() => adjustVertical('down', moveAmount)}
                       className={cn(
-                        'h-10 w-10 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900',
-                        'flex items-center justify-center'
+                        'h-10 w-10 rounded-xl border border-slate-200 bg-white text-slate-600',
+                        'flex items-center justify-center transition-all duration-200',
+                        'hover:border-slate-900 hover:bg-slate-50 hover:text-slate-900 hover:shadow-sm',
+                        'active:scale-90 active:bg-slate-100'
                       )}
                     >
                       <svg
@@ -322,8 +326,10 @@ export const SettingsSidebar: React.FC = () => {
                     <button
                       onClick={() => adjustHorizontal('left', moveAmount)}
                       className={cn(
-                        'h-10 w-10 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900',
-                        'flex items-center justify-center'
+                        'h-10 w-10 rounded-xl border border-slate-200 bg-white text-slate-600',
+                        'flex items-center justify-center transition-all duration-200',
+                        'hover:border-slate-900 hover:bg-slate-50 hover:text-slate-900 hover:shadow-sm',
+                        'active:scale-90 active:bg-slate-100'
                       )}
                     >
                       <svg
@@ -343,8 +349,10 @@ export const SettingsSidebar: React.FC = () => {
                     <button
                       onClick={() => adjustHorizontal('right', moveAmount)}
                       className={cn(
-                        'h-10 w-10 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-slate-900',
-                        'flex items-center justify-center'
+                        'h-10 w-10 rounded-xl border border-slate-200 bg-white text-slate-600',
+                        'flex items-center justify-center transition-all duration-200',
+                        'hover:border-slate-900 hover:bg-slate-50 hover:text-slate-900 hover:shadow-sm',
+                        'active:scale-90 active:bg-slate-100'
                       )}
                     >
                       <svg
@@ -369,7 +377,10 @@ export const SettingsSidebar: React.FC = () => {
             <button
               onClick={resetAllAdjustments}
               className={cn(
-                'inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600 hover:border-slate-900 hover:text-slate-900'
+                'inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-600',
+                'transition-all duration-200',
+                'hover:border-slate-900 hover:bg-slate-50 hover:text-slate-900 hover:shadow-sm',
+                'active:scale-95 active:bg-slate-100'
               )}
             >
               <svg

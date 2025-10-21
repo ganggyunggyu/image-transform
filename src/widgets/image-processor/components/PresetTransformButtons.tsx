@@ -33,8 +33,9 @@ export const PresetTransformButtons: React.FC<PresetTransformButtonsProps> = ({
             onClick={() => onApplyPreset(value)}
             className={cn(
               'group relative flex h-12 items-center justify-center gap-2 rounded-xl border px-3',
-              'border-slate-200 bg-white text-slate-600 transition-colors',
-              'hover:border-slate-900 hover:text-slate-900'
+              'border-slate-200 bg-white text-slate-600 transition-all duration-200',
+              'hover:border-slate-900 hover:bg-slate-50 hover:text-slate-900 hover:shadow-sm',
+              'active:scale-95 active:bg-slate-100'
             )}
           >
             <span className={cn('text-lg font-semibold')}>{icon}</span>
@@ -50,8 +51,9 @@ export const PresetTransformButtons: React.FC<PresetTransformButtonsProps> = ({
             onClick={() => onApplyPreset(value)}
             className={cn(
               'group flex h-10 flex-col items-center justify-center gap-1 rounded-lg border',
-              'border-slate-200 bg-slate-50 text-[11px] text-slate-500 transition-colors',
-              'hover:border-slate-900 hover:text-slate-900'
+              'border-slate-200 bg-slate-50 text-[11px] text-slate-500 transition-all duration-200',
+              'hover:border-slate-900 hover:bg-white hover:text-slate-900 hover:shadow-sm',
+              'active:scale-95 active:bg-slate-100'
             )}
           >
             <span className={cn('text-xs font-semibold')}>{icon}</span>

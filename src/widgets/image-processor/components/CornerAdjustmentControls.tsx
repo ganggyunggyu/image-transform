@@ -64,7 +64,9 @@ export const CornerAdjustmentControls: React.FC<CornerAdjustmentControlsProps> =
                       <button
                         onClick={() => onAdjustCorner(corner, 'x', -1)}
                         className={cn(
-                          'flex h-6 w-6 items-center justify-center rounded border border-slate-200 bg-white text-slate-500 hover:text-slate-900'
+                          'flex h-6 w-6 items-center justify-center rounded border border-slate-200 bg-white text-slate-500',
+                          'transition-all duration-200 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300',
+                          'active:scale-90 active:bg-slate-100'
                         )}
                       >
                         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -74,7 +76,9 @@ export const CornerAdjustmentControls: React.FC<CornerAdjustmentControlsProps> =
                       <button
                         onClick={() => onAdjustCorner(corner, 'x', 1)}
                         className={cn(
-                          'flex h-6 w-6 items-center justify-center rounded border border-slate-200 bg-white text-slate-500 hover:text-slate-900'
+                          'flex h-6 w-6 items-center justify-center rounded border border-slate-200 bg-white text-slate-500',
+                          'transition-all duration-200 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300',
+                          'active:scale-90 active:bg-slate-100'
                         )}
                       >
                         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -93,7 +97,9 @@ export const CornerAdjustmentControls: React.FC<CornerAdjustmentControlsProps> =
                       <button
                         onClick={() => onAdjustCorner(corner, 'y', -1)}
                         className={cn(
-                          'flex h-6 w-6 items-center justify-center rounded border border-slate-200 bg-white text-slate-500 hover:text-slate-900'
+                          'flex h-6 w-6 items-center justify-center rounded border border-slate-200 bg-white text-slate-500',
+                          'transition-all duration-200 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300',
+                          'active:scale-90 active:bg-slate-100'
                         )}
                       >
                         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -103,7 +109,9 @@ export const CornerAdjustmentControls: React.FC<CornerAdjustmentControlsProps> =
                       <button
                         onClick={() => onAdjustCorner(corner, 'y', 1)}
                         className={cn(
-                          'flex h-6 w-6 items-center justify-center rounded border border-slate-200 bg-white text-slate-500 hover:text-slate-900'
+                          'flex h-6 w-6 items-center justify-center rounded border border-slate-200 bg-white text-slate-500',
+                          'transition-all duration-200 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300',
+                          'active:scale-90 active:bg-slate-100'
                         )}
                       >
                         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">

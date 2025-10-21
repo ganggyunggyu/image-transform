@@ -211,7 +211,10 @@ export const DesktopWorkspace: React.FC = () => {
           <button
             onClick={handleZoomOut}
             className={cn(
-              'flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-all duration-200 hover:-translate-y-0.5 hover:text-slate-900'
+              'flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500',
+              'transition-all duration-200',
+              'hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 hover:shadow-sm',
+              'active:scale-90 active:translate-y-0'
             )}
           >
             <svg
@@ -231,7 +234,10 @@ export const DesktopWorkspace: React.FC = () => {
           <button
             onClick={handleResetTransform}
             className={cn(
-              'hidden sm:inline-flex h-8 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 transition-all duration-200 hover:-translate-y-0.5 hover:text-slate-900'
+              'hidden sm:inline-flex h-8 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600',
+              'transition-all duration-200',
+              'hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 hover:shadow-sm',
+              'active:scale-95 active:translate-y-0'
             )}
           >
             초기화
@@ -239,7 +245,10 @@ export const DesktopWorkspace: React.FC = () => {
           <button
             onClick={handleZoomIn}
             className={cn(
-              'flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-all duration-200 hover:-translate-y-0.5 hover:text-slate-900'
+              'flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500',
+              'transition-all duration-200',
+              'hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 hover:shadow-sm',
+              'active:scale-90 active:translate-y-0'
             )}
           >
             <svg
@@ -301,7 +310,7 @@ export const DesktopWorkspace: React.FC = () => {
               'inline-flex flex-1 min-w-[200px] items-center justify-center gap-2 rounded-2xl px-8 py-3.5 text-sm font-semibold transition-all duration-200',
               !selectedImage || isProcessing
                 ? 'cursor-not-allowed bg-slate-200 text-slate-400'
-                : 'bg-slate-900 text-white hover:-translate-y-0.5 hover:bg-slate-800'
+                : 'bg-slate-900 text-white shadow-sm hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-md active:translate-y-0 active:scale-95'
             )}
           >
             <svg
@@ -327,7 +336,7 @@ export const DesktopWorkspace: React.FC = () => {
               'inline-flex flex-1 min-w-[200px] items-center justify-center gap-2 rounded-2xl border px-8 py-3.5 text-sm font-semibold transition-all duration-200',
               !hasImages || isProcessing
                 ? 'cursor-not-allowed border-slate-200 text-slate-400'
-                : 'border-slate-300 text-slate-600 hover:-translate-y-0.5 hover:border-slate-900 hover:text-slate-900'
+                : 'border-slate-300 text-slate-600 hover:-translate-y-0.5 hover:border-slate-900 hover:bg-slate-50 hover:text-slate-900 hover:shadow-sm active:translate-y-0 active:scale-95'
             )}
           >
             <svg

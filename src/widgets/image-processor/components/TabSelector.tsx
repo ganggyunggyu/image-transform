@@ -24,8 +24,8 @@ export const TabSelector: React.FC<TabSelectorProps> = ({ activeTab, onTabChange
             className={cn(
               'px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200',
               isActive
-                ? 'bg-slate-900 text-white'
-                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                ? 'bg-slate-900 text-white shadow-sm'
+                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 active:scale-95 active:bg-slate-200'
             )}
           >
             {tab.label}

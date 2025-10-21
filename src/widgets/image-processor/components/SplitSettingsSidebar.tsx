@@ -70,10 +70,10 @@ export const SplitSettingsSidebar: React.FC = () => {
           <button
             onClick={() => handleDirectionChange('vertical')}
             className={cn(
-              'flex-1 rounded-lg px-3 py-2 text-xs font-medium transition-all',
+              'flex-1 rounded-lg px-3 py-2 text-xs font-medium transition-all duration-200',
               splitOptions.direction === 'vertical'
                 ? 'bg-slate-900 text-white shadow-sm'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-95'
             )}
           >
             좌우
@@ -81,10 +81,10 @@ export const SplitSettingsSidebar: React.FC = () => {
           <button
             onClick={() => handleDirectionChange('horizontal')}
             className={cn(
-              'flex-1 rounded-lg px-3 py-2 text-xs font-medium transition-all',
+              'flex-1 rounded-lg px-3 py-2 text-xs font-medium transition-all duration-200',
               splitOptions.direction === 'horizontal'
                 ? 'bg-slate-900 text-white shadow-sm'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-95'
             )}
           >
             상하
@@ -117,10 +117,10 @@ export const SplitSettingsSidebar: React.FC = () => {
           disabled={!selectedImage}
           className={cn(
             'w-full rounded-lg px-4 py-2.5 text-sm font-medium',
-            'bg-slate-900 text-white',
-            'hover:bg-slate-800 active:bg-slate-950',
-            'disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed',
-            'transition-all shadow-sm'
+            'bg-slate-900 text-white shadow-sm',
+            'transition-all duration-200',
+            'hover:bg-slate-800 hover:shadow-md active:scale-95',
+            'disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed'
           )}
         >
           선택한 이미지 분할
@@ -131,9 +131,9 @@ export const SplitSettingsSidebar: React.FC = () => {
           className={cn(
             'w-full rounded-lg px-4 py-2.5 text-sm font-medium',
             'bg-white text-slate-900 border border-slate-200',
-            'hover:bg-slate-50 active:bg-slate-100',
-            'disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed',
-            'transition-all'
+            'transition-all duration-200',
+            'hover:bg-slate-50 hover:shadow-sm active:scale-95 active:bg-slate-100',
+            'disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed'
           )}
         >
           전체 이미지 분할

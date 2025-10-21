@@ -25,10 +25,10 @@ export const TransformModeSelector: React.FC<TransformModeSelectorProps> = ({
           key={value}
           onClick={() => onModeChange(value as TransformMode)}
           className={cn(
-            'rounded-xl border px-3 py-2.5 text-left transition-colors',
+            'rounded-xl border px-3 py-2.5 text-left transition-all duration-200',
             transformMode === value
-              ? 'border-slate-900 bg-slate-900 text-white'
-              : 'border-slate-200 bg-white text-slate-600 hover:border-slate-900 hover:text-slate-900'
+              ? 'border-slate-900 bg-slate-900 text-white shadow-sm'
+              : 'border-slate-200 bg-white text-slate-600 hover:border-slate-900 hover:bg-slate-50 hover:text-slate-900 hover:shadow-sm active:scale-95 active:bg-slate-100'
           )}
         >
           <div className={cn('text-sm font-semibold')}>{label}</div>

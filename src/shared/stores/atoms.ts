@@ -46,8 +46,8 @@ export const cornerPointsAtom = atom<Point[]>([
 
 export const frameOptionsAtom = atom<FrameOptions>({
   shape: 'none',
-  padding: 48,
-  borderWidth: 24,
+  padding: 0,
+  borderWidth: 30,
   borderColor: '#ffffff',
   borderOpacity: 1,
   cornerRadius: 24,
@@ -69,7 +69,7 @@ export const hasImagesAtom = atom((get) => get(imageFilesAtom).length > 0);
 export const currentImageIndexAtom = atom((get) => {
   const images = get(imageFilesAtom);
   const selected = get(selectedImageAtom);
-  return selected ? images.findIndex(img => img.id === selected.id) : -1;
+  return selected ? images.findIndex((img) => img.id === selected.id) : -1;
 });
 export const isImageLoadedAtom = atom((get) => !!get(imageElementAtom));
 
@@ -86,29 +86,38 @@ export const clearAllImagesAtom = atom(null, (get, set) => {
   set(imageElementAtom, null);
 });
 
-export const addImageFilesAtom = atom(null, (get, set, newFiles: ImageFile[]) => {
-  const currentFiles = get(imageFilesAtom);
-  set(imageFilesAtom, [...currentFiles, ...newFiles]);
-  
-  // 첫 번째 이미지가 없으면 새로 추가된 첫 번째 이미지를 선택
-  const selected = get(selectedImageAtom);
-  if (!selected && newFiles.length > 0) {
-    set(selectedImageAtom, newFiles[0]);
+export const addImageFilesAtom = atom(
+  null,
+  (get, set, newFiles: ImageFile[]) => {
+    const currentFiles = get(imageFilesAtom);
+    set(imageFilesAtom, [...currentFiles, ...newFiles]);
+
+    // 첫 번째 이미지가 없으면 새로 추가된 첫 번째 이미지를 선택
+    const selected = get(selectedImageAtom);
+    if (!selected && newFiles.length > 0) {
+      set(selectedImageAtom, newFiles[0]);
+      set(imageElementAtom, null);
+    }
+  }
+);
+
+export const selectImageAtom = atom(
+  null,
+  (_, set, imageFile: ImageFile | null) => {
+    set(selectedImageAtom, imageFile);
     set(imageElementAtom, null);
   }
-});
+);
 
-export const selectImageAtom = atom(null, (_, set, imageFile: ImageFile | null) => {
-  set(selectedImageAtom, imageFile);
-  set(imageElementAtom, null);
-});
+export const showAlertMessageAtom = atom(
+  null,
+  (_, set, message: string, severity: AlertSeverity = 'info') => {
+    set(showAlertAtom, message);
+    set(alertSeverityAtom, severity);
 
-export const showAlertMessageAtom = atom(null, (_, set, message: string, severity: AlertSeverity = 'info') => {
-  set(showAlertAtom, message);
-  set(alertSeverityAtom, severity);
-  
-  // 3초 후 자동으로 알림 숨기기
-  setTimeout(() => {
-    set(showAlertAtom, '');
-  }, 3000);
-});
+    // 3초 후 자동으로 알림 숨기기
+    setTimeout(() => {
+      set(showAlertAtom, '');
+    }, 3000);
+  }
+);

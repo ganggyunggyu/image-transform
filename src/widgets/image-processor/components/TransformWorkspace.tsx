@@ -97,6 +97,8 @@ export const TransformWorkspace: React.FC = () => {
         scaleY={canvasScale}
         draggable={!isMobile}
         preventDefault={isMobile}
+        listening={true}
+        imageSmoothingEnabled={true}
       >
         <Layer>
           <Rect

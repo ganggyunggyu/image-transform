@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Image as KonvaImage } from 'react-konva';
 import { useAtomValue } from 'jotai';
 import { warpImagePerspective, applyFrameToImage } from '@/shared/utils';
@@ -19,42 +19,79 @@ export const PerspectiveTransformImage: React.FC = () => {
   const { getTransformedPoints } = useTransform();
 
   const [transformedImageSrc, setTransformedImageSrc] = useState<string | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    const applyPerspectiveTransform = async () => {
-      try {
-        const points = getTransformedPoints();
-        const dstStagePoints: Point[] = [
-          [points[0].x, points[0].y], // 좌상
-          [points[1].x, points[1].y], // 우상
-          [points[2].x, points[2].y], // 우하
-          [points[3].x, points[3].y], // 좌하
-        ];
+  const applyPerspectiveTransform = useCallback(async () => {
+    try {
+      const points = getTransformedPoints();
+      const dstStagePoints: Point[] = [
+        [points[0].x, points[0].y],
+        [points[1].x, points[1].y],
+        [points[2].x, points[2].y],
+        [points[3].x, points[3].y],
+      ];
 
-        if (!image) return;
+      if (!image) return;
 
-        let dataUrl = await warpImagePerspective({
-          imgEl: image,
-          srcSize: { w: image.naturalWidth, h: image.naturalHeight },
-          dstStagePoints,
-          stageTL: [transformBounds.x, transformBounds.y],
-          stageSize: transformBounds,
-        });
+      const maxPreviewSize = 800;
+      const scale = Math.min(1, maxPreviewSize / Math.max(image.naturalWidth, image.naturalHeight));
+      const previewWidth = Math.floor(image.naturalWidth * scale);
+      const previewHeight = Math.floor(image.naturalHeight * scale);
 
-        if (frameOptions.shape !== 'none') {
-          dataUrl = await applyFrameToImage(dataUrl, frameOptions);
+      let resizedImage = image;
+      if (scale < 1) {
+        const canvas = document.createElement('canvas');
+        canvas.width = previewWidth;
+        canvas.height = previewHeight;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'medium';
+          ctx.drawImage(image, 0, 0, previewWidth, previewHeight);
+          const tempImg = new window.Image();
+          await new Promise<void>((resolve) => {
+            tempImg.onload = () => resolve();
+            tempImg.src = canvas.toDataURL('image/webp', 0.5);
+          });
+          resizedImage = tempImg;
         }
-
-        setTransformedImageSrc(dataUrl);
-      } catch (error) {
-        console.error('Perspective transform failed:', error);
       }
-    };
 
-    if (image) {
-      applyPerspectiveTransform();
+      let dataUrl = await warpImagePerspective({
+        imgEl: resizedImage,
+        srcSize: { w: resizedImage.naturalWidth, h: resizedImage.naturalHeight },
+        dstStagePoints,
+        stageTL: [transformBounds.x, transformBounds.y],
+        stageSize: transformBounds,
+      });
+
+      if (frameOptions.shape !== 'none') {
+        dataUrl = await applyFrameToImage(dataUrl, frameOptions);
+      }
+
+      setTransformedImageSrc(dataUrl);
+    } catch (error) {
+      console.error('Perspective transform failed:', error);
     }
   }, [image, getTransformedPoints, transformBounds, frameOptions]);
+
+  useEffect(() => {
+    if (!image) return;
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = setTimeout(() => {
+      applyPerspectiveTransform();
+    }, 150);
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [image, applyPerspectiveTransform]);
 
   const transformedImage = useMemo(() => {
     if (!transformedImageSrc) {

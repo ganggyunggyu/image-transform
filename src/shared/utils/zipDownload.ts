@@ -18,8 +18,9 @@ export const downloadSplitImagesAsZip = async (
 
     for (let i = 0; i < splitImages.length; i++) {
       const base64Data = splitImages[i].split(',')[1];
-      const fileNumber = splitImages.length - i;
-      zip.file(`${baseName}_${fileNumber}.webp`, base64Data, { base64: true });
+      const fileNumber = i + 1;
+      const paddedNumber = String(fileNumber).padStart(String(splitImages.length).length, '0');
+      zip.file(`${baseName}_${paddedNumber}.webp`, base64Data, { base64: true });
     }
   } else {
     // 여러 이미지: 각 이미지마다 폴더 생성
@@ -30,8 +31,9 @@ export const downloadSplitImagesAsZip = async (
       if (folder) {
         for (let i = 0; i < splitImages.length; i++) {
           const base64Data = splitImages[i].split(',')[1];
-          const fileNumber = splitImages.length - i;
-          folder.file(`${baseName}_${fileNumber}.webp`, base64Data, { base64: true });
+          const fileNumber = i + 1;
+          const paddedNumber = String(fileNumber).padStart(String(splitImages.length).length, '0');
+          folder.file(`${baseName}_${paddedNumber}.webp`, base64Data, { base64: true });
         }
       }
     }

@@ -8,6 +8,8 @@ export { PresetTransformButtons } from './PresetTransformButtons';
 export { TransformModeSelector } from './TransformModeSelector';
 export { CornerAdjustmentControls } from './CornerAdjustmentControls';
 export { FrameSelector } from './FrameSelector';
+export { FrameSelectorModal } from './FrameSelectorModal';
+export { FramePreviewButton } from './FramePreviewButton';
 export { TabSelector } from './TabSelector';
 export { SplitWorkspace } from './SplitWorkspace';
 export { SplitSettingsSidebar } from './SplitSettingsSidebar';

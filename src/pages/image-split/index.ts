@@ -1,0 +1,1 @@
+export { ImageSplitPage } from './ImageSplitPage';

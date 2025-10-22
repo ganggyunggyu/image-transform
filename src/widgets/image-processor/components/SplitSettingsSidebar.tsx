@@ -4,7 +4,6 @@ import { splitOptionsAtom, selectedImageAtom, imageFilesAtom, showAlertMessageAt
 import { cn } from '@/shared/lib';
 import { splitImage } from '@/shared/utils/split';
 import { downloadSplitImagesAsZip } from '@/shared/utils/zipDownload';
-import type { SplitDirection } from '@/shared/types';
 
 export const SplitSettingsSidebar: React.FC = () => {
   const [splitOptions, setSplitOptions] = useAtom(splitOptionsAtom);
@@ -12,14 +11,17 @@ export const SplitSettingsSidebar: React.FC = () => {
   const imageFiles = useAtomValue(imageFilesAtom);
   const showAlert = useSetAtom(showAlertMessageAtom);
 
-  const handleDirectionChange = (direction: SplitDirection) => {
-    setSplitOptions({ ...splitOptions, direction });
-  };
-
-  const handleCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleHorizontalCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(e.target.value);
     if (!isNaN(value) && value >= 1 && value <= 20) {
-      setSplitOptions({ ...splitOptions, count: value });
+      setSplitOptions({ ...splitOptions, horizontalCount: value });
+    }
+  };
+
+  const handleVerticalCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(e.target.value);
+    if (!isNaN(value) && value >= 1 && value <= 20) {
+      setSplitOptions({ ...splitOptions, verticalCount: value });
     }
   };
 
@@ -63,42 +65,31 @@ export const SplitSettingsSidebar: React.FC = () => {
 
   return (
     <aside className={cn('flex h-full w-full flex-col gap-6 px-6 py-5')}>
-      {/* 분할 방향 */}
+      {/* 좌우 분할 개수 */}
       <div className={cn('flex flex-col gap-3')}>
-        <label className={cn('text-xs font-medium text-slate-700')}>분할 방향</label>
-        <div className={cn('flex gap-2')}>
-          <button
-            onClick={() => handleDirectionChange('vertical')}
-            className={cn(
-              'flex-1 rounded-lg px-3 py-2 text-xs font-medium transition-all duration-200',
-              splitOptions.direction === 'vertical'
-                ? 'bg-slate-900 text-white shadow-sm'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-95'
-            )}
-          >
-            좌우
-          </button>
-          <button
-            onClick={() => handleDirectionChange('horizontal')}
-            className={cn(
-              'flex-1 rounded-lg px-3 py-2 text-xs font-medium transition-all duration-200',
-              splitOptions.direction === 'horizontal'
-                ? 'bg-slate-900 text-white shadow-sm'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-95'
-            )}
-          >
-            상하
-          </button>
-        </div>
-      </div>
-
-      {/* 분할 개수 */}
-      <div className={cn('flex flex-col gap-3')}>
-        <label className={cn('text-xs font-medium text-slate-700')}>분할 개수</label>
+        <label className={cn('text-xs font-medium text-slate-700')}>좌우 분할 개수</label>
         <input
           type="text"
-          value={splitOptions.count}
-          onChange={handleCountChange}
+          value={splitOptions.verticalCount}
+          onChange={handleVerticalCountChange}
+          className={cn(
+            'w-full rounded-lg border border-slate-200 px-3 py-2',
+            'text-sm text-slate-900',
+            'focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-100',
+            'transition-all'
+          )}
+          placeholder="1-20"
+        />
+        <p className={cn('text-xs text-slate-500')}>1~20개까지 설정 가능</p>
+      </div>
+
+      {/* 상하 분할 개수 */}
+      <div className={cn('flex flex-col gap-3')}>
+        <label className={cn('text-xs font-medium text-slate-700')}>상하 분할 개수</label>
+        <input
+          type="text"
+          value={splitOptions.horizontalCount}
+          onChange={handleHorizontalCountChange}
           className={cn(
             'w-full rounded-lg border border-slate-200 px-3 py-2',
             'text-sm text-slate-900',

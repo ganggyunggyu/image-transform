@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Link as RouterLink, useLocation } from 'r
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HomePage } from '@/pages/home';
 import { ImageProcessorPage } from '@/pages/image-processor';
+import { ImageSplitPage } from '@/pages/image-split';
 import { cn } from '@/shared/lib';
 
 const AppShell: React.FC = () => {
@@ -77,6 +78,17 @@ const AppShell: React.FC = () => {
                 )}
               >
                 스튜디오
+              </RouterLink>
+              <RouterLink
+                to="/image-split"
+                className={cn(
+                  'px-3 py-2 rounded-md',
+                  'hover:text-gray-900 hover:bg-gray-50',
+                  'transition-all duration-200',
+                  location.pathname === '/image-split' && 'text-gray-900 bg-gray-100'
+                )}
+              >
+                이미지 분할
               </RouterLink>
             </div>
           </div>
@@ -153,6 +165,18 @@ const AppShell: React.FC = () => {
                 스튜디오
               </RouterLink>
               <RouterLink
+                to="/image-split"
+                onClick={() => setMobileMenuOpen(false)}
+                className={cn(
+                  'block rounded-lg px-4 py-3',
+                  'text-sm font-medium text-slate-600',
+                  'transition-colors duration-200 hover:bg-slate-50 hover:text-slate-900',
+                  location.pathname === '/image-split' && 'text-slate-900 bg-slate-50'
+                )}
+              >
+                이미지 분할
+              </RouterLink>
+              <RouterLink
                 to="/image-transform"
                 onClick={() => setMobileMenuOpen(false)}
                 className={cn(
@@ -176,6 +200,7 @@ const AppShell: React.FC = () => {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/image-transform" element={<ImageProcessorPage />} />
+            <Route path="/image-split" element={<ImageSplitPage />} />
           </Routes>
         </div>
       </main>

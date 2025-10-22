@@ -67,14 +67,6 @@ export const downloadWithFolder = async ({
 
     zip.file(`${folderName}/${fileName}`, imageBlob);
 
-    const readmeContent = `이미지 변환 결과
-    
-원본 파일: ${originalFileName}
-변환 타입: ${transformType}
-생성 시간: ${now.toLocaleString('ko-KR')}
-`;
-    zip.file(`${folderName}/README.txt`, readmeContent);
-
     const content = await zip.generateAsync({ type: 'blob' });
 
     const link = document.createElement('a');
@@ -141,18 +133,6 @@ export const downloadMultipleWithFolder = async (
 
       zip.file(`${folderName}/${fileName}`, imageBlob);
     }
-
-    const batchInfo = `배치 이미지 변환 결과
-
-처리된 파일 수: ${downloads.length}
-변환 타입: ${transformType}
-생성 시간: ${now.toLocaleString('ko-KR')}
-
-처리된 파일 목록:
-${downloads.map((d) => `- ${d.originalFileName}`).join('\n')}
-`;
-
-    zip.file(`${folderName}/BATCH_INFO.txt`, batchInfo);
 
     const content = await zip.generateAsync({ type: 'blob' });
 

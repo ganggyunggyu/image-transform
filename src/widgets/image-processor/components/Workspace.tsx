@@ -1,8 +1,7 @@
 import React, { useCallback } from 'react';
-import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { cn } from '@/shared/lib';
 import {
-  canvasScaleAtom,
   hasImagesAtom,
   isProcessingAtom,
   showAlertMessageAtom,
@@ -29,16 +28,12 @@ const useImageProcessorActions = () => {
       return;
     }
 
-    const { top, bottom, left, right } = cropOptions;
-    if (top === 0 && bottom === 0 && left === 0 && right === 0) {
-      showAlertMessage('자를 영역을 입력하세요.', 'warning');
-      return;
-    }
-
     setIsProcessing(true);
 
     try {
       const results: { dataURL: string; originalFileName: string }[] = [];
+      const { top, bottom, left, right } = cropOptions;
+      const shouldCrop = top !== 0 || bottom !== 0 || left !== 0 || right !== 0;
 
       for (const imageFile of imageFiles) {
         const img = new Image();
@@ -54,7 +49,22 @@ const useImageProcessorActions = () => {
             reject(new Error('이미지를 불러오지 못했습니다.'));
         });
 
-        let dataUrl = await cropImage(img, cropOptions);
+        let dataUrl: string;
+
+        if (shouldCrop) {
+          dataUrl = await cropImage(img, cropOptions);
+        } else {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth || img.width;
+          canvas.height = img.naturalHeight || img.height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0);
+            dataUrl = canvas.toDataURL('image/webp', 0.95);
+          } else {
+            throw new Error('Canvas context를 생성할 수 없습니다.');
+          }
+        }
 
         if (frameOptions.shape !== 'none') {
           dataUrl = await applyFrameToImage(dataUrl, frameOptions);
@@ -70,14 +80,14 @@ const useImageProcessorActions = () => {
         }
       }
 
-      await downloadMultipleWithFolder(results, 'batch_crop');
+      await downloadMultipleWithFolder(results, shouldCrop ? 'batch_crop' : 'batch_transform');
       showAlertMessage(
         `${imageFiles.length}개의 이미지를 일괄 다운로드했습니다.`,
         'success'
       );
     } catch (error) {
       console.error(error);
-      showAlertMessage('일괄 자르기 중 오류가 발생했습니다.', 'error');
+      showAlertMessage('일괄 처리 중 오류가 발생했습니다.', 'error');
     } finally {
       setIsProcessing(false);
     }
@@ -95,21 +105,9 @@ const useImageProcessorActions = () => {
 };
 
 export const DesktopWorkspace: React.FC = () => {
-  const [canvasScale, setCanvasScale] = useAtom(canvasScaleAtom);
   const isProcessing = useAtomValue(isProcessingAtom);
   const hasImages = useAtomValue(hasImagesAtom);
-  const { resetTransform } = useTransform();
-  const imageElement = useAtomValue(imageElementAtom);
   const { processBatch } = useImageProcessorActions();
-  const handleZoomIn = () =>
-    setCanvasScale((scale) => Math.min(scale * 1.2, 3));
-  const handleZoomOut = () =>
-    setCanvasScale((scale) => Math.max(scale / 1.2, 0.2));
-  const handleResetTransform = () => {
-    if (imageElement) {
-      resetTransform(imageElement);
-    }
-  };
 
   return (
     <section className={cn('flex h-full flex-col gap-6 bg-white p-6')}>
@@ -127,78 +125,6 @@ export const DesktopWorkspace: React.FC = () => {
             Studio Mode
           </div>
         </div>
-
-        <div
-          className={cn(
-            'flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-500 shadow-sm'
-          )}
-        >
-          <span className={cn('hidden sm:block')}>배율</span>
-          <span
-            className={cn(
-              'rounded-full border border-slate-200 px-3 py-0.5 text-xs font-semibold text-slate-700'
-            )}
-          >
-            {Math.round(canvasScale * 100)}%
-          </span>
-          <button
-            onClick={handleZoomOut}
-            className={cn(
-              'flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500',
-              'transition-all duration-200',
-              'hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 hover:shadow-sm',
-              'active:scale-90 active:translate-y-0'
-            )}
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M20 12H4"
-              />
-            </svg>
-          </button>
-          <button
-            onClick={handleResetTransform}
-            className={cn(
-              'hidden sm:inline-flex h-8 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600',
-              'transition-all duration-200',
-              'hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 hover:shadow-sm',
-              'active:scale-95 active:translate-y-0'
-            )}
-          >
-            초기화
-          </button>
-          <button
-            onClick={handleZoomIn}
-            className={cn(
-              'flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500',
-              'transition-all duration-200',
-              'hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 hover:shadow-sm',
-              'active:scale-90 active:translate-y-0'
-            )}
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-          </button>
-        </div>
       </header>
 
       <div className={cn('flex flex-1 flex-col gap-4')}>
@@ -209,7 +135,7 @@ export const DesktopWorkspace: React.FC = () => {
         >
           <div
             className={cn(
-              'h-full rounded-2xl border border-slate-300 bg-slate-800 shadow-inner'
+              'h-full rounded-2xl border border-slate-300 bg-slate-800 shadow-inner relative z-0'
             )}
           >
             <TransformWorkspace />
@@ -218,7 +144,7 @@ export const DesktopWorkspace: React.FC = () => {
           {isProcessing && (
             <div
               className={cn(
-                'absolute inset-0 z-10 flex items-center justify-center rounded-3xl bg-white/70 backdrop-blur-sm'
+                'absolute inset-0 z-50 flex items-center justify-center rounded-3xl bg-white/80 backdrop-blur-sm'
               )}
             >
               <div className={cn('flex flex-col items-center gap-4')}>

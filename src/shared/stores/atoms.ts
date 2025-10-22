@@ -24,7 +24,7 @@ export const showAlertAtom = atom('');
 export const alertSeverityAtom = atom<AlertSeverity>('info');
 
 // 캔버스 상태
-export const canvasScaleAtom = atom(0.75);
+export const canvasScaleAtom = atom(1.0);
 export const stageSizeAtom = atom<StageSize>({
   width: 800,
   height: 600,
@@ -61,8 +61,8 @@ export const frameOptionsAtom = atom<FrameOptions>({
 });
 
 export const splitOptionsAtom = atom<SplitOptions>({
-  direction: 'vertical',
-  count: 6,
+  horizontalCount: 1,
+  verticalCount: 1,
 });
 
 export const cropOptionsAtom = atom<CropOptions>({
@@ -73,6 +73,7 @@ export const cropOptionsAtom = atom<CropOptions>({
 });
 
 export const croppedImageAtom = atom<string | null>(null);
+export const croppedImageRawAtom = atom<string | null>(null);
 
 // 파생 상태 (computed atoms)
 export const hasImagesAtom = atom((get) => get(imageFilesAtom).length > 0);

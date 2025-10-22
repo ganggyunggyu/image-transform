@@ -51,27 +51,50 @@ export const TransformWorkspace: React.FC = () => {
       return;
     }
 
-    const observer = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (!entry) {
-        return;
-      }
-      const { width, height } = entry.contentRect;
-      // Mobile optimized padding
+    const updateStageSize = () => {
+      const { width, height } = element.getBoundingClientRect();
       const padding = isMobile ? 12 : 24;
-      const minWidth = isMobile ? 280 : 320;
-      const minHeight = isMobile ? 200 : 240;
 
-      const nextSize: StageSize = {
-        width: Math.max(Math.floor(width) - padding, minWidth),
-        height: Math.max(Math.floor(height) - padding, minHeight),
-      };
-      setStageSize(nextSize);
+      const containerWidth = Math.max(Math.floor(width) - padding, isMobile ? 280 : 320);
+      const containerHeight = Math.max(Math.floor(height) - padding, isMobile ? 200 : 240);
+
+      let stageWidth = containerWidth;
+      let stageHeight = containerHeight;
+
+      // 이미지가 있으면 이미지 비율에 맞춰 캔버스 크기 조정
+      const img = croppedElement || imageElement;
+      if (img) {
+        const imgWidth = img.naturalWidth || img.width;
+        const imgHeight = img.naturalHeight || img.height;
+        const imgRatio = imgWidth / imgHeight;
+        const containerRatio = containerWidth / containerHeight;
+
+        if (imgRatio > containerRatio) {
+          // 이미지가 더 넓음 - 너비 기준
+          stageWidth = containerWidth;
+          stageHeight = containerWidth / imgRatio;
+        } else {
+          // 이미지가 더 높음 - 높이 기준
+          stageHeight = containerHeight;
+          stageWidth = containerHeight * imgRatio;
+        }
+      }
+
+      setStageSize({
+        width: Math.floor(stageWidth),
+        height: Math.floor(stageHeight),
+      });
+    };
+
+    const observer = new ResizeObserver(() => {
+      updateStageSize();
     });
 
     observer.observe(element);
+    updateStageSize();
+
     return () => observer.disconnect();
-  }, [setStageSize, isMobile]);
+  }, [setStageSize, isMobile, imageElement, croppedElement]);
 
   React.useEffect(() => {
     if (!croppedImage) {
@@ -83,14 +106,43 @@ export const TransformWorkspace: React.FC = () => {
     img.onload = () => {
       setCroppedElement(img);
 
+      const element = containerRef.current;
+      if (!element) return;
+
+      const { width, height } = element.getBoundingClientRect();
+      const padding = isMobile ? 12 : 24;
+
+      const containerWidth = Math.max(Math.floor(width) - padding, isMobile ? 280 : 320);
+      const containerHeight = Math.max(Math.floor(height) - padding, isMobile ? 200 : 240);
+
       const imgWidth = img.naturalWidth || img.width;
       const imgHeight = img.naturalHeight || img.height;
+      const imgRatio = imgWidth / imgHeight;
+      const containerRatio = containerWidth / containerHeight;
 
-      const centerX = stageSize.width / 2;
-      const centerY = stageSize.height / 2;
+      let stageWidth = containerWidth;
+      let stageHeight = containerHeight;
 
-      const maxW = stageSize.width * 0.9;
-      const maxH = stageSize.height * 0.9;
+      if (imgRatio > containerRatio) {
+        // 이미지가 더 넓음 - 너비 기준
+        stageWidth = containerWidth;
+        stageHeight = containerWidth / imgRatio;
+      } else {
+        // 이미지가 더 높음 - 높이 기준
+        stageHeight = containerHeight;
+        stageWidth = containerHeight * imgRatio;
+      }
+
+      setStageSize({
+        width: Math.floor(stageWidth),
+        height: Math.floor(stageHeight),
+      });
+
+      const centerX = stageWidth / 2;
+      const centerY = stageHeight / 2;
+
+      const maxW = stageWidth * 1.0;
+      const maxH = stageHeight * 1.0;
 
       const scaleX = maxW / imgWidth;
       const scaleY = maxH / imgHeight;
@@ -116,7 +168,7 @@ export const TransformWorkspace: React.FC = () => {
       img.onload = null;
       img.onerror = null;
     };
-  }, [croppedImage, stageSize, setTransformBounds]);
+  }, [croppedImage, isMobile, setStageSize, setTransformBounds]);
 
   if (!selectedImage) {
     return (
@@ -144,7 +196,8 @@ export const TransformWorkspace: React.FC = () => {
     <div
       ref={containerRef}
       className={cn(
-        'w-full h-full relative overflow-hidden rounded-3xl border border-slate-700 bg-slate-800'
+        'w-full h-full relative overflow-hidden rounded-3xl border border-slate-700 bg-slate-800',
+        'flex items-center justify-center'
       )}
     >
       <Stage
@@ -153,7 +206,7 @@ export const TransformWorkspace: React.FC = () => {
         height={stageSize.height}
         scaleX={canvasScale}
         scaleY={canvasScale}
-        draggable={!isMobile}
+        draggable={false}
         preventDefault={isMobile}
         listening={true}
         imageSmoothingEnabled={true}
@@ -170,59 +223,45 @@ export const TransformWorkspace: React.FC = () => {
             cornerRadius={12 / Math.max(canvasScale, 1)}
           />
 
-          {croppedElement ? (
+          {imageElement && (
             <KonvaImage
-              image={croppedElement}
+              image={croppedElement || imageElement}
               x={transformBounds.x}
               y={transformBounds.y}
               width={transformBounds.width}
               height={transformBounds.height}
-              opacity={1}
+              opacity={isImageLoaded ? 0.7 : 0.5}
               listening={false}
             />
-          ) : (
-            <>
-              {imageElement && (
-                <KonvaImage
-                  image={imageElement}
-                  x={transformBounds.x}
-                  y={transformBounds.y}
-                  width={transformBounds.width}
-                  height={transformBounds.height}
-                  opacity={isImageLoaded ? 0.7 : 0.5}
-                  listening={false}
-                />
-              )}
-
-              {(() => {
-                const points = getTransformedPoints();
-                const linePoints = [
-                  points[0].x,
-                  points[0].y,
-                  points[1].x,
-                  points[1].y,
-                  points[2].x,
-                  points[2].y,
-                  points[3].x,
-                  points[3].y,
-                  points[0].x,
-                  points[0].y,
-                ];
-
-                return (
-                  <Line
-                    points={linePoints}
-                    stroke="rgba(15, 23, 42, 0.4)"
-                    strokeWidth={1}
-                    closed
-                    fill="rgba(15, 23, 42, 0.02)"
-                  />
-                );
-              })()}
-
-              {imageElement && isImageLoaded && <PerspectiveTransformImage />}
-            </>
           )}
+
+          {(() => {
+            const points = getTransformedPoints();
+            const linePoints = [
+              points[0].x,
+              points[0].y,
+              points[1].x,
+              points[1].y,
+              points[2].x,
+              points[2].y,
+              points[3].x,
+              points[3].y,
+              points[0].x,
+              points[0].y,
+            ];
+
+            return (
+              <Line
+                points={linePoints}
+                stroke="rgba(15, 23, 42, 0.4)"
+                strokeWidth={1}
+                closed
+                fill="rgba(15, 23, 42, 0.02)"
+              />
+            );
+          })()}
+
+          {imageElement && isImageLoaded && <PerspectiveTransformImage />}
         </Layer>
       </Stage>
     </div>

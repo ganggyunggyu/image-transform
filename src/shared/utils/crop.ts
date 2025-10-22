@@ -46,7 +46,7 @@ export const cropImage = async (
       );
 
       // WebP로 변환
-      resolve(canvas.toDataURL('image/webp', 0.95));
+      resolve(canvas.toDataURL('image/webp', 1.0));
     } catch (error) {
       reject(error);
     }

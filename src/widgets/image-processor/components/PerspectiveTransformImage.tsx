@@ -8,18 +8,40 @@ import {
   transformBoundsAtom,
   stageSizeAtom,
   frameOptionsAtom,
+  croppedImageRawAtom,
 } from '@/shared/stores/atoms';
 import type { Point } from '@/shared/types';
 
 export const PerspectiveTransformImage: React.FC = () => {
-  const image = useAtomValue(imageElementAtom);
+  const originalImage = useAtomValue(imageElementAtom);
+  const croppedImageRaw = useAtomValue(croppedImageRawAtom);
   const transformBounds = useAtomValue(transformBoundsAtom);
   const stageSize = useAtomValue(stageSizeAtom);
   const frameOptions = useAtomValue(frameOptionsAtom);
   const { getTransformedPoints } = useTransform();
 
+  const [croppedElement, setCroppedElement] = useState<HTMLImageElement | null>(null);
   const [transformedImageSrc, setTransformedImageSrc] = useState<string | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (!croppedImageRaw) {
+      setCroppedElement(null);
+      return;
+    }
+
+    const img = new window.Image();
+    img.onload = () => setCroppedElement(img);
+    img.onerror = () => setCroppedElement(null);
+    img.src = croppedImageRaw;
+
+    return () => {
+      img.onload = null;
+      img.onerror = null;
+    };
+  }, [croppedImageRaw]);
+
+  const image = croppedElement || originalImage;
 
   const applyPerspectiveTransform = useCallback(async () => {
     try {

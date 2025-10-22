@@ -4,7 +4,6 @@ import type { FrameShape } from '@/shared/types';
 
 interface FramePreviewButtonProps {
   shape: FrameShape;
-  label: string;
   icon: React.ReactNode;
   isSelected: boolean;
   onClick: () => void;
@@ -12,7 +11,6 @@ interface FramePreviewButtonProps {
 
 export const FramePreviewButton: React.FC<FramePreviewButtonProps> = ({
   shape,
-  label,
   icon,
   isSelected,
   onClick,
@@ -35,10 +33,10 @@ export const FramePreviewButton: React.FC<FramePreviewButtonProps> = ({
       )}
     >
       <div className={cn('w-full h-full flex items-center justify-center')}>
-        {React.cloneElement(icon as React.ReactElement, {
-          className: 'w-full h-full',
-          stroke: getStrokeColor(),
-        })}
+        {React.isValidElement(icon) &&
+          React.cloneElement(icon as React.ReactElement<any>, {
+            style: { width: '100%', height: '100%', stroke: getStrokeColor() },
+          })}
       </div>
     </button>
   );

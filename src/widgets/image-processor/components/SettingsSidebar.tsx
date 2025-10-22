@@ -3,7 +3,6 @@ import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { cn } from '@/shared/lib';
 import { useTransform } from '@/features/free-transform';
 import {
-  transformModeAtom,
   frameOptionsAtom,
   cropOptionsAtom,
   selectedImageAtom,
@@ -15,16 +14,12 @@ import {
 } from '@/shared/stores/atoms';
 import type { FrameOptions } from '@/shared/types';
 import { PresetTransformButtons } from './PresetTransformButtons';
-import { TransformModeSelector } from './TransformModeSelector';
-import { FrameSelector } from './FrameSelector';
 import { FrameSelectorModal } from './FrameSelectorModal';
 import { cropImage, applyFrameToImage } from '@/shared/utils';
 
 export const SettingsSidebar: React.FC = () => {
-  const [transformMode, setTransformMode] = useAtom(transformModeAtom);
   const [frameOptions, setFrameOptions] = useAtom(frameOptionsAtom);
   const [cropOptions, setCropOptions] = useAtom(cropOptionsAtom);
-  const [moveAmount, setMoveAmount] = React.useState(10);
   const [isFrameModalOpen, setIsFrameModalOpen] = React.useState(false);
   const selectedImage = useAtomValue(selectedImageAtom);
   const imageElement = useAtomValue(imageElementAtom);
@@ -41,12 +36,7 @@ export const SettingsSidebar: React.FC = () => {
     [setFrameOptions]
   );
 
-  const {
-    adjustHorizontal,
-    adjustVertical,
-    resetAllAdjustments,
-    applyPresetTransform,
-  } = useTransform();
+  const { applyPresetTransform } = useTransform();
 
   React.useEffect(() => {
     if (!croppedImageRaw) return;

@@ -2,7 +2,6 @@ import React from 'react';
 import { Stage, Layer, Rect, Line, Image as KonvaImage } from 'react-konva';
 import type { Stage as KonvaStage } from 'konva/lib/Stage';
 import { useAtom, useAtomValue } from 'jotai';
-import type { StageSize } from '@/shared/types';
 import { cn } from '@/shared/lib';
 import { useTransform } from '@/features/free-transform';
 import {

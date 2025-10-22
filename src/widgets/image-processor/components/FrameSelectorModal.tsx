@@ -145,7 +145,6 @@ export const FrameSelectorModal: React.FC<FrameSelectorModalProps> = ({
               <FramePreviewButton
                 key={frame.value}
                 shape={frame.value}
-                label={frame.label}
                 icon={frame.icon}
                 isSelected={selectedShape === frame.value}
                 onClick={() => handleSelect(frame.value)}

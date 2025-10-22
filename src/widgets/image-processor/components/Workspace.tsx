@@ -6,13 +6,11 @@ import {
   isProcessingAtom,
   showAlertMessageAtom,
   imageFilesAtom,
-  imageElementAtom,
   frameOptionsAtom,
   cropOptionsAtom,
 } from '@/shared/stores/atoms';
 import { downloadMultipleWithFolder } from '@/shared/utils/download';
 import { applyFrameToImage, cropImage } from '@/shared/utils';
-import { useTransform } from '@/features/free-transform';
 import { TransformWorkspace } from './TransformWorkspace';
 
 const useImageProcessorActions = () => {

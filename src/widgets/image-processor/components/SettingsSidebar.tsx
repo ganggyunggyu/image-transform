@@ -1,20 +1,34 @@
 import React from 'react';
-import { useAtom } from 'jotai';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { cn } from '@/shared/lib';
 import { useTransform } from '@/features/free-transform';
 import {
   transformModeAtom,
   frameOptionsAtom,
+  cropOptionsAtom,
+  selectedImageAtom,
+  imageElementAtom,
+  isProcessingAtom,
+  showAlertMessageAtom,
+  croppedImageAtom,
 } from '@/shared/stores/atoms';
 import type { FrameOptions } from '@/shared/types';
 import { PresetTransformButtons } from './PresetTransformButtons';
 import { TransformModeSelector } from './TransformModeSelector';
 import { FrameSelector } from './FrameSelector';
+import { cropImage, applyFrameToImage } from '@/shared/utils';
 
 export const SettingsSidebar: React.FC = () => {
   const [transformMode, setTransformMode] = useAtom(transformModeAtom);
   const [frameOptions, setFrameOptions] = useAtom(frameOptionsAtom);
+  const [cropOptions, setCropOptions] = useAtom(cropOptionsAtom);
   const [moveAmount, setMoveAmount] = React.useState(10);
+  const selectedImage = useAtomValue(selectedImageAtom);
+  const imageElement = useAtomValue(imageElementAtom);
+  const isProcessing = useAtomValue(isProcessingAtom);
+  const setIsProcessing = useSetAtom(isProcessingAtom);
+  const showAlertMessage = useSetAtom(showAlertMessageAtom);
+  const setCroppedImage = useSetAtom(croppedImageAtom);
 
   const handleFrameOptionChange = React.useCallback(
     (patch: Partial<FrameOptions>) => {
@@ -29,6 +43,45 @@ export const SettingsSidebar: React.FC = () => {
     resetAllAdjustments,
     applyPresetTransform,
   } = useTransform();
+
+  const handleCrop = React.useCallback(async () => {
+    if (!selectedImage || !imageElement) {
+      showAlertMessage('자를 이미지를 선택하세요.', 'warning');
+      return;
+    }
+
+    const { top, bottom, left, right } = cropOptions;
+    if (top === 0 && bottom === 0 && left === 0 && right === 0) {
+      showAlertMessage('자를 영역을 입력하세요.', 'warning');
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      let dataUrl = await cropImage(imageElement, cropOptions);
+
+      if (frameOptions.shape !== 'none') {
+        dataUrl = await applyFrameToImage(dataUrl, frameOptions);
+      }
+
+      setCroppedImage(dataUrl);
+      showAlertMessage('자르기 완료', 'success');
+    } catch (error) {
+      console.error(error);
+      showAlertMessage('이미지 자르기 중 오류가 발생했습니다.', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [
+    selectedImage,
+    imageElement,
+    cropOptions,
+    frameOptions,
+    setCroppedImage,
+    setIsProcessing,
+    showAlertMessage,
+  ]);
 
   return (
     <aside
@@ -202,6 +255,137 @@ export const SettingsSidebar: React.FC = () => {
               'text-xs font-semibold uppercase tracking-[0.2em] text-slate-400'
             )}
           >
+            Crop
+          </h4>
+          <div
+            className={cn(
+              'rounded-2xl border border-slate-200 bg-white p-4 space-y-3'
+            )}
+          >
+            <div className={cn('grid grid-cols-2 gap-2')}>
+              <div className={cn('space-y-1')}>
+                <label className={cn('text-[10px] font-medium text-slate-500')}>
+                  상단
+                </label>
+                <input
+                  type="text"
+                  value={cropOptions.top}
+                  onChange={(e) =>
+                    setCropOptions({
+                      ...cropOptions,
+                      top: Number(e.target.value),
+                    })
+                  }
+                  className={cn(
+                    'w-full px-2 py-1.5 rounded-lg border border-slate-200',
+                    'text-xs text-slate-900',
+                    'focus:outline-none focus:border-slate-900'
+                  )}
+                  placeholder="0"
+                />
+              </div>
+
+              <div className={cn('space-y-1')}>
+                <label className={cn('text-[10px] font-medium text-slate-500')}>
+                  하단
+                </label>
+                <input
+                  type="text"
+                  value={cropOptions.bottom}
+                  onChange={(e) =>
+                    setCropOptions({
+                      ...cropOptions,
+                      bottom: Number(e.target.value),
+                    })
+                  }
+                  className={cn(
+                    'w-full px-2 py-1.5 rounded-lg border border-slate-200',
+                    'text-xs text-slate-900',
+                    'focus:outline-none focus:border-slate-900'
+                  )}
+                  placeholder="0"
+                />
+              </div>
+
+              <div className={cn('space-y-1')}>
+                <label className={cn('text-[10px] font-medium text-slate-500')}>
+                  좌측
+                </label>
+                <input
+                  type="text"
+                  value={cropOptions.left}
+                  onChange={(e) =>
+                    setCropOptions({
+                      ...cropOptions,
+                      left: Number(e.target.value),
+                    })
+                  }
+                  className={cn(
+                    'w-full px-2 py-1.5 rounded-lg border border-slate-200',
+                    'text-xs text-slate-900',
+                    'focus:outline-none focus:border-slate-900'
+                  )}
+                  placeholder="0"
+                />
+              </div>
+
+              <div className={cn('space-y-1')}>
+                <label className={cn('text-[10px] font-medium text-slate-500')}>
+                  우측
+                </label>
+                <input
+                  type="text"
+                  value={cropOptions.right}
+                  onChange={(e) =>
+                    setCropOptions({
+                      ...cropOptions,
+                      right: Number(e.target.value),
+                    })
+                  }
+                  className={cn(
+                    'w-full px-2 py-1.5 rounded-lg border border-slate-200',
+                    'text-xs text-slate-900',
+                    'focus:outline-none focus:border-slate-900'
+                  )}
+                  placeholder="0"
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={handleCrop}
+              disabled={!selectedImage || isProcessing}
+              className={cn(
+                'inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200',
+                !selectedImage || isProcessing
+                  ? 'cursor-not-allowed bg-slate-200 text-slate-400'
+                  : 'bg-slate-900 text-white shadow-sm hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-md active:translate-y-0 active:scale-95'
+              )}
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              자르기
+            </button>
+          </div>
+        </section>
+
+        {/* <section className={cn('space-y-3')}>
+          <h4
+            className={cn(
+              'text-xs font-semibold uppercase tracking-[0.2em] text-slate-400'
+            )}
+          >
             Presets
           </h4>
           <div
@@ -211,9 +395,9 @@ export const SettingsSidebar: React.FC = () => {
           >
             <PresetTransformButtons onApplyPreset={applyPresetTransform} />
           </div>
-        </section>
+        </section> */}
 
-        <section className={cn('space-y-3')}>
+        {/* <section className={cn('space-y-3')}>
           <h4
             className={cn(
               'text-xs font-semibold uppercase tracking-[0.2em] text-slate-400'
@@ -229,9 +413,9 @@ export const SettingsSidebar: React.FC = () => {
               onModeChange={setTransformMode}
             />
           </div>
-        </section>
+        </section> */}
 
-        <section className={cn('space-y-3')}>
+        {/* <section className={cn('space-y-3')}>
           <h4
             className={cn(
               'text-xs font-semibold uppercase tracking-[0.2em] text-slate-400'
@@ -399,7 +583,7 @@ export const SettingsSidebar: React.FC = () => {
               모서리 초기화
             </button>
           </div>
-        </section>
+        </section> */}
       </div>
     </aside>
   );

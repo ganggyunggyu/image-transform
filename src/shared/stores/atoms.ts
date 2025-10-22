@@ -9,6 +9,7 @@ import type {
   FrameOptions,
   TabMode,
   SplitOptions,
+  CropOptions,
 } from '../types';
 
 // 이미지 관련 상태
@@ -23,7 +24,7 @@ export const showAlertAtom = atom('');
 export const alertSeverityAtom = atom<AlertSeverity>('info');
 
 // 캔버스 상태
-export const canvasScaleAtom = atom(0.5);
+export const canvasScaleAtom = atom(0.75);
 export const stageSizeAtom = atom<StageSize>({
   width: 800,
   height: 600,
@@ -63,6 +64,15 @@ export const splitOptionsAtom = atom<SplitOptions>({
   direction: 'vertical',
   count: 6,
 });
+
+export const cropOptionsAtom = atom<CropOptions>({
+  top: 0,
+  bottom: 0,
+  left: 0,
+  right: 0,
+});
+
+export const croppedImageAtom = atom<string | null>(null);
 
 // 파생 상태 (computed atoms)
 export const hasImagesAtom = atom((get) => get(imageFilesAtom).length > 0);

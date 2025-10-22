@@ -7,7 +7,9 @@ export interface DownloadOptions {
     | 'transform'
     | 'rotation'
     | 'batch_transform'
-    | 'batch_rotation';
+    | 'batch_rotation'
+    | 'crop'
+    | 'batch_crop';
   timestamp?: boolean;
 }
 
@@ -16,6 +18,8 @@ const FILE_SUFFIX: Record<DownloadOptions['transformType'], string> = {
   rotation: '_rotated',
   batch_transform: '_batch_transformed',
   batch_rotation: '_batch_rotated',
+  crop: '_cropped',
+  batch_crop: '_cropped',
 };
 
 const extractDataUrlMeta = (dataURL: string) => {

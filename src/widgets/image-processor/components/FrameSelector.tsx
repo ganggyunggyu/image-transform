@@ -58,7 +58,7 @@ const frameShapes: { value: FrameShape; label: string; icon: React.ReactNode }[]
 
 export const FrameSelector: React.FC<FrameSelectorProps> = ({ selectedShape, onShapeChange }) => {
   return (
-    <div className={cn('grid grid-cols-2 gap-2')}>
+    <div className={cn('flex gap-1.5 overflow-x-auto')}>
       {frameShapes.map((frame) => {
         const isSelected = selectedShape === frame.value;
         return (
@@ -66,14 +66,18 @@ export const FrameSelector: React.FC<FrameSelectorProps> = ({ selectedShape, onS
             key={frame.value}
             onClick={() => onShapeChange(frame.value)}
             className={cn(
-              'flex flex-col items-center gap-2 rounded-xl border px-3 py-3 text-xs font-semibold transition-all duration-200',
+              'flex flex-col items-center gap-1 rounded-lg border px-2 py-1.5 text-[10px] font-medium transition-all duration-200 flex-shrink-0',
               isSelected
                 ? 'border-slate-900 bg-slate-900 text-white shadow-sm'
                 : 'border-slate-200 bg-white text-slate-600 hover:border-slate-900 hover:bg-slate-50 hover:text-slate-900 hover:shadow-sm active:scale-95 active:bg-slate-100'
             )}
           >
-            {frame.icon}
-            <span>{frame.label}</span>
+            <span className="w-4 h-4 flex items-center justify-center">
+              {React.cloneElement(frame.icon as React.ReactElement, {
+                className: 'w-4 h-4'
+              })}
+            </span>
+            <span className="whitespace-nowrap">{frame.label}</span>
           </button>
         );
       })}

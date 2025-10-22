@@ -145,7 +145,8 @@ export const applyFrameToImage = (
 
       const safePadding = Math.max(0, padding);
       const safeBorder = Math.max(0, borderWidth);
-      const totalPadding = safePadding + safeBorder;
+      const isLineFrame = shape.startsWith('line-') || shape.startsWith('vline-');
+      const totalPadding = isLineFrame ? 0 : safePadding + safeBorder;
       const polaroidExtra = shape === 'polaroid' ? safePadding * 2.5 : 0;
 
       // 실제 이미지 컨텐츠 영역 찾기
@@ -241,20 +242,65 @@ export const applyFrameToImage = (
         }
 
         default: {
-          if (safeBorder > 0) {
-            withShadow(ctx, shadowOptions, () => {
-              ctx.strokeStyle = frameColor;
-              ctx.lineWidth = safeBorder;
-              ctx.strokeRect(safeBorder / 2, safeBorder / 2, canvasWidth - safeBorder, canvasHeight - safeBorder);
-            });
-          }
+          if (shape.startsWith('line-') || shape.startsWith('vline-')) {
+            ctx.drawImage(img, -bounds.x, -bounds.y, img.width, img.height);
 
-          ctx.drawImage(img, imageX, imageY, img.width, img.height);
+            const isVertical = shape.startsWith('vline-');
+            const color = shape.endsWith('-white') ? 'white' : 'black';
+
+            let thickness: string;
+            if (shape.includes('-extra-thick-')) thickness = 'extra-thick';
+            else if (shape.includes('-thick-')) thickness = 'thick';
+            else if (shape.includes('-medium-')) thickness = 'medium';
+            else if (shape.includes('-thin-')) thickness = 'thin';
+            else thickness = 'thin';
+
+            // 이미지 크기에 비례하는 선 두께 (기준: 1000px = 1배)
+            const baseSize = Math.min(canvasWidth, canvasHeight);
+            const scale = baseSize / 1000;
+            const baseThickness = thickness === 'thin' ? 1 : thickness === 'medium' ? 3 : thickness === 'thick' ? 6 : 12;
+            const lineThickness = Math.max(1, baseThickness * scale);
+            const lineColor = color === 'white' ? '#ffffff' : '#1e293b';
+
+            if (safeBorder > 0) {
+              withShadow(ctx, shadowOptions, () => {
+                ctx.strokeStyle = lineColor;
+                ctx.lineWidth = lineThickness;
+                ctx.lineCap = 'butt';
+
+                if (isVertical) {
+                  const horizontalOffset = canvasWidth * 0.03;
+                  ctx.beginPath();
+                  ctx.moveTo(horizontalOffset, 0);
+                  ctx.lineTo(horizontalOffset, canvasHeight);
+                  ctx.stroke();
+
+                  ctx.beginPath();
+                  ctx.moveTo(canvasWidth - horizontalOffset, 0);
+                  ctx.lineTo(canvasWidth - horizontalOffset, canvasHeight);
+                  ctx.stroke();
+                } else {
+                  const verticalOffset = canvasHeight * 0.03;
+                  ctx.beginPath();
+                  ctx.moveTo(0, verticalOffset);
+                  ctx.lineTo(canvasWidth, verticalOffset);
+                  ctx.stroke();
+
+                  ctx.beginPath();
+                  ctx.moveTo(0, canvasHeight - verticalOffset);
+                  ctx.lineTo(canvasWidth, canvasHeight - verticalOffset);
+                  ctx.stroke();
+                }
+              });
+            }
+          } else {
+            ctx.drawImage(img, imageX, imageY, img.width, img.height);
+          }
           break;
         }
       }
 
-      resolve(canvas.toDataURL('image/webp', 0.85));
+      resolve(canvas.toDataURL('image/webp', 0.95));
     };
 
     img.onerror = () => reject(new Error('Failed to load image'));

@@ -26,7 +26,16 @@ export type RotationMode = 'single' | 'multiple' | 'full';
 export type BackgroundColor = 'transparent' | 'white' | 'black';
 export type AlertSeverity = 'success' | 'error' | 'info' | 'warning';
 
-export type FrameShape = 'none' | 'rectangle' | 'circle' | 'rounded' | 'polaroid';
+export type FrameShape =
+  | 'none'
+  | 'rectangle'
+  | 'circle'
+  | 'rounded'
+  | 'polaroid'
+  | 'line-thin-white' | 'line-medium-white' | 'line-thick-white' | 'line-extra-thick-white'
+  | 'line-thin-black' | 'line-medium-black' | 'line-thick-black' | 'line-extra-thick-black'
+  | 'vline-thin-white' | 'vline-medium-white' | 'vline-thick-white' | 'vline-extra-thick-white'
+  | 'vline-thin-black' | 'vline-medium-black' | 'vline-thick-black' | 'vline-extra-thick-black';
 
 export interface FrameOptions {
   shape: FrameShape;
@@ -43,11 +52,9 @@ export interface FrameOptions {
   shadowOffsetY: number;
 }
 
-export type SplitDirection = 'horizontal' | 'vertical';
-
 export interface SplitOptions {
-  direction: SplitDirection;
-  count: number;
+  horizontalCount: number;
+  verticalCount: number;
 }
 
 export interface CropOptions {

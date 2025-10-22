@@ -27,30 +27,82 @@ const frameShapes: { value: FrameShape; label: string; icon: React.ReactNode }[]
     ),
   },
   {
-    value: 'rounded',
-    label: '둥근 사각형',
+    value: 'line-thin',
+    label: '얇은 선',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <rect x="4" y="4" width="16" height="16" strokeWidth={1.5} rx="3" />
+        <line x1="5" y1="6" x2="19" y2="6" strokeWidth={0.5} />
+        <line x1="5" y1="18" x2="19" y2="18" strokeWidth={0.5} />
       </svg>
     ),
   },
   {
-    value: 'circle',
-    label: '원형',
+    value: 'line-medium',
+    label: '중간 선',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <circle cx="12" cy="12" r="8" strokeWidth={1.5} />
+        <line x1="5" y1="6" x2="19" y2="6" strokeWidth={1} />
+        <line x1="5" y1="18" x2="19" y2="18" strokeWidth={1} />
       </svg>
     ),
   },
   {
-    value: 'polaroid',
-    label: '폴라로이드',
+    value: 'line-thick',
+    label: '두꺼운 선',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <rect x="4" y="3" width="16" height="18" strokeWidth={1.5} rx="1" />
-        <line x1="4" y1="16" x2="20" y2="16" strokeWidth={1.5} />
+        <line x1="5" y1="6" x2="19" y2="6" strokeWidth={1.5} />
+        <line x1="5" y1="18" x2="19" y2="18" strokeWidth={1.5} />
+      </svg>
+    ),
+  },
+  {
+    value: 'line-extra-thick',
+    label: '매우 두꺼운 선',
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <line x1="5" y1="6" x2="19" y2="6" strokeWidth={2.5} />
+        <line x1="5" y1="18" x2="19" y2="18" strokeWidth={2.5} />
+      </svg>
+    ),
+  },
+  {
+    value: 'vline-thin',
+    label: '얇은 세로선',
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <line x1="6" y1="5" x2="6" y2="19" strokeWidth={0.5} />
+        <line x1="18" y1="5" x2="18" y2="19" strokeWidth={0.5} />
+      </svg>
+    ),
+  },
+  {
+    value: 'vline-medium',
+    label: '중간 세로선',
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <line x1="6" y1="5" x2="6" y2="19" strokeWidth={1} />
+        <line x1="18" y1="5" x2="18" y2="19" strokeWidth={1} />
+      </svg>
+    ),
+  },
+  {
+    value: 'vline-thick',
+    label: '두꺼운 세로선',
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <line x1="6" y1="5" x2="6" y2="19" strokeWidth={1.5} />
+        <line x1="18" y1="5" x2="18" y2="19" strokeWidth={1.5} />
+      </svg>
+    ),
+  },
+  {
+    value: 'vline-extra-thick',
+    label: '매우 두꺼운 세로선',
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <line x1="6" y1="5" x2="6" y2="19" strokeWidth={2.5} />
+        <line x1="18" y1="5" x2="18" y2="19" strokeWidth={2.5} />
       </svg>
     ),
   },
@@ -66,18 +118,15 @@ export const FrameSelector: React.FC<FrameSelectorProps> = ({ selectedShape, onS
             key={frame.value}
             onClick={() => onShapeChange(frame.value)}
             className={cn(
-              'flex flex-col items-center gap-1 rounded-lg border px-2 py-1.5 text-[10px] font-medium transition-all duration-200 flex-shrink-0',
+              'flex items-center justify-center rounded-lg border p-2 transition-all duration-200 flex-shrink-0',
               isSelected
                 ? 'border-slate-900 bg-slate-900 text-white shadow-sm'
                 : 'border-slate-200 bg-white text-slate-600 hover:border-slate-900 hover:bg-slate-50 hover:text-slate-900 hover:shadow-sm active:scale-95 active:bg-slate-100'
             )}
           >
-            <span className="w-4 h-4 flex items-center justify-center">
-              {React.cloneElement(frame.icon as React.ReactElement, {
-                className: 'w-4 h-4'
-              })}
-            </span>
-            <span className="whitespace-nowrap">{frame.label}</span>
+            {React.cloneElement(frame.icon as React.ReactElement, {
+              className: 'w-5 h-5'
+            })}
           </button>
         );
       })}

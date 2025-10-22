@@ -49,3 +49,10 @@ export interface SplitOptions {
   direction: SplitDirection;
   count: number;
 }
+
+export interface CropOptions {
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://schema.tauri.app/config/1",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devPath": "http://localhost:6001",
+    "distDir": "../dist"
+  },
+  "package": {
+    "productName": "Image Transform Studio",
+    "version": "1.0.0"
+  },
+  "tauri": {
+    "allowlist": {
+      "shell": {
+        "open": true
+      }
+    },
+    "windows": [
+      {
+        "title": "Image Transform Studio",
+        "width": 1280,
+        "height": 800,
+        "resizable": true
+      }
+    ],
+    "bundle": {
+      "active": true,
+      "targets": [
+        "app"
+      ],
+      "identifier": "com.imagetools.transform"
+    }
+  }
+}

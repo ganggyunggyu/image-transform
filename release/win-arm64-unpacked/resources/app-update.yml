@@ -1,0 +1,4 @@
+owner: ganggyunggyu
+repo: image-transform
+provider: github
+updaterCacheDirName: web-app-updater

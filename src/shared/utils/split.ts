@@ -1,4 +1,5 @@
 import type { ImageFile, SplitOptions } from '../types';
+import { IMAGE_EXPORT_CONFIG } from '../config/image';
 
 export const splitImage = async (
   imageFile: ImageFile,
@@ -57,8 +58,7 @@ export const splitImage = async (
               height              // dHeight: 대상 높이
             );
 
-            // 품질을 0.8로 낮춰 성능 향상 (시각적 차이 거의 없음)
-            results.push(canvas.toDataURL('image/webp', 0.8));
+            results.push(canvas.toDataURL(IMAGE_EXPORT_CONFIG.FORMAT, IMAGE_EXPORT_CONFIG.QUALITY));
           }
         }
 

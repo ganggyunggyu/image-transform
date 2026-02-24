@@ -1,4 +1,5 @@
 import type { Point, TransformBounds } from '@/shared/types';
+import { IMAGE_EXPORT_CONFIG } from '../config/image';
 
 type OpenCVSize = unknown;
 type OpenCVScalar = unknown;
@@ -171,7 +172,7 @@ export const warpImagePerspective = async (
     mat.delete()
   );
 
-  return canvas.toDataURL('image/webp', 0.95);
+  return canvas.toDataURL(IMAGE_EXPORT_CONFIG.FORMAT, IMAGE_EXPORT_CONFIG.QUALITY);
 };
 
 export {};

@@ -3,11 +3,20 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "main": "electron/dist/main.js",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:electron": "tsc -b && vite build --mode electron",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "electron:compile": "tsc -p electron/tsconfig.json",
+    "electron:start": "npm run electron:compile && electron electron/dist/main.js",
+    "electron:wait": "wait-on http://localhost:6001 && npm run electron:start",
+    "electron:dev": "concurrently \"npm run dev\" \"npm run electron:wait\"",
+    "electron:build": "npm run build:electron && npm run electron:compile && electron-builder"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -16,6 +25,7 @@
     "@mui/material": "^7.3.1",
     "@tailwindcss/vite": "^4.1.12",
     "@tanstack/react-query": "^5.90.1",
+    "@tauri-apps/api": "^1.6.0",
     "@types/jszip": "^3.4.1",
     "axios": "^1.11.0",
     "clsx": "^2.1.1",
@@ -35,6 +45,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
+    "@tauri-apps/cli": "^1.6.0",
+    "@types/electron": "^1.6.0",
     "@types/node": "^24.8.1",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
@@ -45,6 +57,33 @@
     "globals": "^16.3.0",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.39.1",
-    "vite": "^7.1.2"
+    "vite": "^7.1.2",
+    "concurrently": "^9.1.0",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.7",
+    "wait-on": "^8.0.2"
+  },
+  "build": {
+    "appId": "com.imagetools.transform",
+    "productName": "Image Transform Studio",
+    "files": [
+      "dist/**/*",
+      "electron/dist/**/*"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "zip"
+      ]
+    }
   }
 }

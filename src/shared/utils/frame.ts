@@ -1,4 +1,5 @@
 import type { FrameOptions } from '../types';
+import { IMAGE_EXPORT_CONFIG } from '../config/image';
 
 const clamp = (value: number, min: number, max: number) => {
   if (Number.isNaN(value)) {
@@ -300,7 +301,7 @@ export const applyFrameToImage = (
         }
       }
 
-      resolve(canvas.toDataURL('image/webp', 0.95));
+      resolve(canvas.toDataURL(IMAGE_EXPORT_CONFIG.FORMAT, IMAGE_EXPORT_CONFIG.QUALITY));
     };
 
     img.onerror = () => reject(new Error('Failed to load image'));

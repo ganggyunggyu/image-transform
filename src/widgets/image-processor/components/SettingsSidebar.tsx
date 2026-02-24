@@ -15,7 +15,8 @@ import {
 import type { FrameOptions } from '@/shared/types';
 import { PresetTransformButtons } from './PresetTransformButtons';
 import { FrameSelectorModal } from './FrameSelectorModal';
-import { cropImage, applyFrameToImage } from '@/shared/utils';
+import { cropImage, applyFrameToImage, warpImagePerspective } from '@/shared/utils';
+import { downloadWithFolder } from '@/shared/utils/download';
 
 export const SettingsSidebar: React.FC = () => {
   const [frameOptions, setFrameOptions] = useAtom(frameOptionsAtom);
@@ -36,7 +37,7 @@ export const SettingsSidebar: React.FC = () => {
     [setFrameOptions]
   );
 
-  const { applyPresetTransform } = useTransform();
+  const { applyPresetTransform, getTransformedPoints, transformBounds } = useTransform();
 
   React.useEffect(() => {
     if (!croppedImageRaw) return;
@@ -106,6 +107,73 @@ export const SettingsSidebar: React.FC = () => {
     frameOptions,
     setCroppedImage,
     setCroppedImageRaw,
+    setIsProcessing,
+    showAlertMessage,
+  ]);
+
+  const handleDownloadTransformed = React.useCallback(async () => {
+    if (!selectedImage || !imageElement) {
+      showAlertMessage('다운로드할 이미지를 선택하세요.', 'warning');
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      const points = getTransformedPoints();
+      const dstStagePoints: [number, number][] = [
+        [points[0].x, points[0].y],
+        [points[1].x, points[1].y],
+        [points[2].x, points[2].y],
+        [points[3].x, points[3].y],
+      ];
+
+      let sourceImage = imageElement;
+
+      if (croppedImageRaw) {
+        const img = new Image();
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => {
+            sourceImage = img;
+            resolve();
+          };
+          img.onerror = () => reject(new Error('크롭된 이미지 로드 실패'));
+          img.src = croppedImageRaw;
+        });
+      }
+
+      let dataUrl = await warpImagePerspective({
+        imgEl: sourceImage,
+        srcSize: { w: sourceImage.naturalWidth, h: sourceImage.naturalHeight },
+        dstStagePoints,
+        stageTL: [transformBounds.x, transformBounds.y],
+        stageSize: transformBounds,
+      });
+
+      if (frameOptions.shape !== 'none') {
+        dataUrl = await applyFrameToImage(dataUrl, frameOptions);
+      }
+
+      await downloadWithFolder({
+        dataURL: dataUrl,
+        originalFileName: selectedImage.name,
+        transformType: 'transform',
+      });
+
+      showAlertMessage('이미지를 다운로드했습니다.', 'success');
+    } catch (error) {
+      console.error(error);
+      showAlertMessage('다운로드 중 오류가 발생했습니다.', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [
+    selectedImage,
+    imageElement,
+    croppedImageRaw,
+    getTransformedPoints,
+    transformBounds,
+    frameOptions,
     setIsProcessing,
     showAlertMessage,
   ]);
@@ -393,10 +461,36 @@ export const SettingsSidebar: React.FC = () => {
           </h4>
           <div
             className={cn(
-              'rounded-2xl border border-slate-200 bg-white p-4'
+              'rounded-2xl border border-slate-200 bg-white p-4 space-y-3'
             )}
           >
             <PresetTransformButtons onApplyPreset={applyPresetTransform} />
+
+            <button
+              onClick={handleDownloadTransformed}
+              disabled={!selectedImage || isProcessing}
+              className={cn(
+                'inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200',
+                !selectedImage || isProcessing
+                  ? 'cursor-not-allowed bg-slate-200 text-slate-400'
+                  : 'bg-slate-900 text-white shadow-sm hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow-md active:translate-y-0 active:scale-95'
+              )}
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                />
+              </svg>
+              변형 다운로드
+            </button>
           </div>
         </section>
 

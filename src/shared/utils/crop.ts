@@ -1,4 +1,5 @@
 import type { CropOptions } from '../types';
+import { IMAGE_EXPORT_CONFIG } from '../config/image';
 
 export const cropImage = async (
   imageElement: HTMLImageElement,
@@ -45,8 +46,7 @@ export const cropImage = async (
         croppedHeight // 대상 높이
       );
 
-      // WebP로 변환
-      resolve(canvas.toDataURL('image/webp', 1.0));
+      resolve(canvas.toDataURL(IMAGE_EXPORT_CONFIG.FORMAT, IMAGE_EXPORT_CONFIG.QUALITY));
     } catch (error) {
       reject(error);
     }

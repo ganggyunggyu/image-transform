@@ -1,6 +1,6 @@
 import React from 'react';
 import { Provider as JotaiProvider } from 'jotai';
-import { BrowserRouter, Routes, Route, Link as RouterLink, useLocation } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Routes, Route, Link as RouterLink, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HomePage } from '@/pages/home';
 import { ImageProcessorPage } from '@/pages/image-processor';
@@ -209,6 +209,10 @@ const AppShell: React.FC = () => {
 };
 
 const App: React.FC = () => {
+  const RouterComponent = React.useMemo(() => {
+    return import.meta.env.MODE === 'electron' ? HashRouter : BrowserRouter;
+  }, []);
+
   const queryClient = React.useMemo(
     () =>
       new QueryClient({
@@ -226,9 +230,9 @@ const App: React.FC = () => {
     <React.Fragment>
       <QueryClientProvider client={queryClient}>
         <JotaiProvider>
-          <BrowserRouter>
+          <RouterComponent>
             <AppShell />
-          </BrowserRouter>
+          </RouterComponent>
         </JotaiProvider>
       </QueryClientProvider>
     </React.Fragment>

@@ -1,6 +1,6 @@
 # Image Transform Studio – Project AGENT
 
-_Last reviewed: 2025-10-20_
+_Last reviewed: 2025-10-30_
 
 ## 1. Product Snapshot
 - **Purpose**: Browser workstation for perspective transforms, batch exports, and now frame styling on warped shots.
@@ -19,10 +19,14 @@ _Last reviewed: 2025-10-20_
 ```bash
 npm run dev          # Vite dev server (port 6001)
 npm run build        # Type-check + production build
+npm run build:electron # Electron-targeted build (relative assets + HashRouter)
 npm run preview      # Serve build output
 npm run lint         # ESLint w/ typescript-eslint config
 ```
 _Add Vitest/Playwright harnesses when automated coverage starts._
+
+- Electron packaging from macOS arm64 succeeds with bundled NSIS binaries (no Wine/Mono needed in current setup); only install `brew install --cask wine-stable` and `brew install mono` if logs explicitly complain about missing `wine`/`mono`.
+- `npm run electron:build` now chains `npm run build:electron` so the Vite output uses relative asset paths and HashRouter when shipped via file:// protocols.
 
 ## 4. FSD Layout (alias `@/` enforced)
 ```
@@ -77,6 +81,15 @@ src/
 - Keep visuals “modern SaaS”: soft gradients, rounded cards, no emoji; reach for SVG/icon components instead.
 - Respect default padding/radius scale when extending frame tooling to avoid mismatched spacing.
 
+## 7.1. Team Rules Bridge (케인 규칙 적용)
+- 절대 경로 import만 사용 (`@/*` → `src/*`). 같은 디렉토리 내 배럴/로컬 재export는 상대 경로 허용.
+- `className`는 항상 `cn(...)` 사용. 문자열 결합 금지.
+- React Fragment는 축약 문법(`<>`) 금지, 반드시 `<React.Fragment>` 사용.
+- TanStack Query Provider 필수. 전역 `refetchOnWindowFocus: false`, `retry: 1` 유지.
+- Jotai: Atom에는 순수 상태만. 액션은 훅(`features/.../hooks`, `shared/hooks`)으로 분리. 기존 액션 atom은 점진적 마이그레이션.
+- 퍼블리싱: Tailwind v4 + SVG 아이콘만 사용. 이모지 금지.
+- 주석: 비자명 로직/수학만. 불필요 주석 금지.
+
 ## 8. External Integrations
 - **OpenCV.js** (`shared/utils/_opencv.ts`): lazy loads CDN script once. Always `await loadOpenCV()` before warp and guard `window.cv`.
 - **JSZip** (`shared/utils/download.ts`): builds ZIP payloads for single + batch exports; fallback path uses anchors.
@@ -118,3 +131,9 @@ const defaultOptions = getDefaultStoreValue(frameOptionsAtom);
 ```
 
 Stay anchored to `widgets/image-processor` for orchestration; most flows originate there.
+
+## 12. Optional Python Wrapper Standards
+- FastAPI 선호. 모든 import는 절대 경로(`from src....`)로 통일.
+- 타입 힌팅 필수, 데이터 구조는 Pydantic 모델 사용.
+- FSD 레이아웃: `src/{app,pages,widgets,features,entities,shared,services}`.
+- 전역 예외/로깅/설정은 `src/app`·`src/shared`에 표준화. 서비스 레이어 + 리포지토리 패턴 권장.

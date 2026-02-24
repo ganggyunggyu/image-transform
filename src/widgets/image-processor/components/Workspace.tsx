@@ -12,6 +12,7 @@ import {
 import { downloadMultipleWithFolder } from '@/shared/utils/download';
 import { applyFrameToImage, cropImage } from '@/shared/utils';
 import { TransformWorkspace } from './TransformWorkspace';
+import { IMAGE_EXPORT_CONFIG } from '@/shared/config/image';
 
 const useImageProcessorActions = () => {
   const imageFiles = useAtomValue(imageFilesAtom);
@@ -58,7 +59,7 @@ const useImageProcessorActions = () => {
           const ctx = canvas.getContext('2d');
           if (ctx) {
             ctx.drawImage(img, 0, 0);
-            dataUrl = canvas.toDataURL('image/webp', 0.95);
+            dataUrl = canvas.toDataURL(IMAGE_EXPORT_CONFIG.FORMAT, IMAGE_EXPORT_CONFIG.QUALITY);
           } else {
             throw new Error('Canvas context를 생성할 수 없습니다.');
           }

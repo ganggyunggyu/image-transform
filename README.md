@@ -1,70 +1,45 @@
-# React + TypeScript + Vite
+# Image Transform Studio
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+이미지를 캔버스 위에서 원근 변형(perspective warp), 크롭, 분할, 프레임 적용까지 실시간으로 처리하는 데스크톱 앱. React + Konva로 캔버스를 그리고, Electron과 Tauri 두 가지 방식으로 데스크톱 빌드를 만든다.
 
-Currently, two official plugins are available:
+## 개요
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### 기능
 
-## Expanding the ESLint configuration
+- **원근 변형**: 이미지의 네 꼭짓점을 드래그해서 원하는 사다리꼴 형태로 왜곡
+- **크롭**: 프레임 미리보기를 보면서 자르기 영역 지정, 다운로드
+- **분할(Split) 모드**: 이미지를 여러 조각으로 나눠 ZIP으로 일괄 다운로드
+- **프레임**: 다양한 색상/선 스타일의 프레임을 합성
+- WebP로 변환해 다운로드, 미리보기는 저품질로 렌더링해 반응성 확보
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 기술 스택
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- React + TypeScript + Vite
+- `react-konva` — 캔버스 렌더링
+- Jotai — 변형/프레임/분할 모드 상태 관리
+- Electron, Tauri(Rust) — 듀얼 데스크톱 빌드
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+### 실행
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev       # Vite dev 서버
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 트러블슈팅
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1. **원근 변형 핸들을 드래그할 때마다 미리보기가 버벅임** — 매 프레임마다 풀사이즈 원본 이미지로 워프 연산을 다시 계산해서 느렸다.
+2. **프레임 설정을 사이드바에서 바꿔도 캔버스 미리보기에 바로 반영되지 않는 경우가 있었음.**
+3. **캔버스가 리렌더링될 때마다 다시 생성되는 문제가 있었음(`fix: canvas 최초생성 한번망 사용`).**
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-# image-transform
+## 원인분석
+
+1. `PerspectiveTransformImage` 컴포넌트가 이미지가 바뀔 때마다 원본 해상도 그대로 `warpImagePerspective`를 호출하고 있었다. 드래그 중에는 매 마우스 이동마다 이 연산이 실행되니 큰 이미지일수록 렉이 심했다.
+2. 프레임 파이프라인과 사이드바 컨트롤의 상태 갱신 타이밍이 어긋나서, 컨트롤 값은 바뀌었는데 변형 함수가 이전 값을 참조하는 클로저 문제가 있었다.
+3. 캔버스 엘리먼트를 컴포넌트 렌더링 로직 안에서 매번 새로 만들고 있어서, 리렌더링될 때마다 캔버스 컨텍스트가 초기화됐다.
+
+## 해결
+
+1. `useCallback` + `useRef`로 변형 함수를 감싸고 150ms 디바운스를 적용해서 드래그가 멈춘 뒤에만 실제 연산이 돌도록 했다. 미리보기용으로는 최대 800px로 리사이즈한 이미지를 WebP 품질 0.5로 렌더링해서 계산량을 줄였다(`src/widgets/image-processor/components/PerspectiveTransformImage.tsx`, 커밋 `f042295`).
+2. 프레임 파이프라인과 사이드바 컨트롤이 같은 소스(Jotai atom)를 구독하도록 동기화해서 상태 불일치를 없앴다(커밋 `1e749f4`, fix: sync frame pipeline and sidebar controls).
+3. 캔버스를 컴포넌트 최초 마운트 시 한 번만 생성하고 이후에는 재사용하도록 고쳤다(커밋 `107d032`).
